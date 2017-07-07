@@ -124,7 +124,7 @@ class SelectService : AppCompatActivity() {
                 try {
                     val request = Request.Builder().url(urlStr).build()
                     val response = OkHttpClient().newCall(request).execute()
-                    val filePath = filesDir.path +"/kaku"+ fileName +".png"
+                    val filePath = filesDir.path +"/"+ fileName +".png"
                     val outStream = File(filePath).absoluteFile.outputStream()
                     val bitmap = BitmapFactory.decodeStream(response.body()?.byteStream())
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream)

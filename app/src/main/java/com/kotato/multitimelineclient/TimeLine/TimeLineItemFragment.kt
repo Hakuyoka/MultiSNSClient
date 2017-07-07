@@ -36,4 +36,9 @@ class TimeLineItemFragment : ListFragment(){
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater?.inflate(R.layout.fragment_time_line_item, container, false)
     }
+
+    fun addAll(timelineItems: List<TimeLineItem>){
+        adapter?.addAll(timelineItems)
+    }
+
 }
