@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">MultiTimeLineClient</string>
+    <string name="com.twitter.sdk.android.CONSUMER_KEY">RzvmQcIgzVaBszQyqqiIs7vLU</string>
+    <string name="com.twitter.sdk.android.CONSUMER_SECRET">z5StIYBhxZI6pYvL88dIYlX3U5rswRKJNqWupM5OrwQAbJAUmS</string>
+    <string name="title_activity_accounts_mange">AccountsMangeActivity</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_activity_time_line">TimeLineActivity</string>
+</resources>
