@@ -15,6 +15,7 @@ import android.widget.AdapterView
 import com.kotato.multitimelineclient.AccountManage.AccountListAdapter
 
 import com.kotato.multitimelineclient.R
+import com.kotato.multitimelineclient.Service.TwitterService
 import com.mopub.volley.RequestQueue
 import com.mopub.volley.toolbox.Volley
 
@@ -37,8 +38,11 @@ class TimeLineItemFragment : ListFragment(){
         val swipeContainer = view?.findViewById<View>(R.id.swipe_container) as SwipeRefreshLayout
         swipeContainer.setOnRefreshListener(SwipeRefreshLayout.OnRefreshListener{
             Log.d("Refresh Start", "tarttttt")
-            swipeContainer.isRefreshing = false
-
+            TwitterService.getTimeLine {
+                swipeContainer.isRefreshing = false
+                adapter?.removeAll()
+                adapter?.addAll(it)
+            }
         })
         return view
     }
@@ -47,5 +51,11 @@ class TimeLineItemFragment : ListFragment(){
         Log.d("Add TimeLine", timelineItems.size.toString())
         adapter?.addAll(timelineItems)
     }
+
+
+    fun removeAll(){
+        adapter?.removeAll()
+    }
+
 
 }

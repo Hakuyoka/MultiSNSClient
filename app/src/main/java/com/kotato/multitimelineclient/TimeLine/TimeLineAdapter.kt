@@ -102,6 +102,14 @@ class TimeLineAdapter(context: Context, queue: RequestQueue, fragmentManager: Fr
         remove(getItem(index))
     }
 
+
+    fun removeAll() {
+        for(i in count-1 downTo 0){
+            remove(getItem(i))
+        }
+    }
+
+
 }
 
 

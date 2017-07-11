@@ -56,7 +56,7 @@ class AccountListAdapter(context: Context) : ArrayAdapter<Account>(context, 0){
 
 
         val userIcon = view.findViewById<View>(R.id.user_icon) as ImageView
-        userIcon.setImageURI(Uri.parse(context.filesDir.path + "/" + item.imageUrl))
+        userIcon.setImageURI(Uri.parse(context.filesDir.path + "/" + item.id.toString() + "_0" + ".png"))
         return view
     }
 
@@ -64,9 +64,7 @@ class AccountListAdapter(context: Context) : ArrayAdapter<Account>(context, 0){
         get() {
             val size = count
             val itemList = ArrayList<Account>(size)
-            for (index in 0..size - 1) {
-                itemList.add(getItem(index))
-            }
+            (0..size - 1).mapTo(itemList) { getItem(it) }
             return itemList
         }
 

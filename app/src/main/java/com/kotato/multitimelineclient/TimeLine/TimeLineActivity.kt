@@ -15,6 +15,7 @@ import com.kotato.multitimelineclient.AccountManage.AccountListFragment
 import com.kotato.multitimelineclient.AccountManage.getAccountLisst
 
 import com.kotato.multitimelineclient.R
+import com.kotato.multitimelineclient.Service.TwitterService
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.models.Tweet
 import com.twitter.sdk.android.core.models.TwitterCollection
@@ -44,35 +45,12 @@ class TimeLineActivity : AppCompatActivity() {
                 .add(R.id.time_line_fragment_container, listFragment, "time_line_fragment_main")
                 .commit()
 
-        getTimeLine {
+        TwitterService.getTimeLine {
             Log.d("Timeline get", Gson().toJson(it.get(0)).toString())
-            val timeLineItem :List<TimeLineItem> = it.map {
-                it ->
-                   TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
-                           it.entities?.media?.filter { it -> it.type == "photo" }?.map { it -> it.mediaUrlHttps })
-            }
-
-            listFragment?.addAll(timeLineItem)
+            listFragment?.addAll(it)
         }
 
     }
 
-    fun getTimeLine(callback : (List<Tweet>) -> Unit){
-        val activeSession = TwitterCore.getInstance().sessionManager.activeSession
-        if(activeSession != null){
-            val appClient = TwitterApiClient(activeSession)
-            val call = appClient.statusesService.homeTimeline(null,null,null, false, null, null, null)
-            call?.enqueue(object : Callback<List<Tweet>>() {
-                override fun success(result: Result<List<Tweet>>) {
-                    Log.d("Get Timeline Success", result.data.toString())
-                    callback.invoke(result.data)
-                }
-
-                override fun failure(exception: TwitterException) {
-                }
-            })
-
-        }
-    }
 
 }
