@@ -33,7 +33,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val config = TwitterConfig.Builder(this)
                 .logger(DefaultLogger(Log.DEBUG))
-                .twitterAuthConfig(TwitterAuthConfig("RzvmQcIgzVaBszQyqqiIs7vLU", "z5StIYBhxZI6pYvL88dIYlX3U5rswRKJNqWupM5OrwQAbJAUmS"))
                 .debug(true)
                 .build()
         Twitter.initialize(config)
@@ -85,29 +84,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun getUserImage(view: View) : Deferred<Unit> =  async(CommonPool){
-        val result = object: AsyncTask<Void, Void, String>() {
-            override fun doInBackground(vararg params: Void): String {
-                var res: String = ""
-                try {
-                    val request = Request.Builder().url("https://images.contentful.com/hspc7zpa5cvq/nsolid-enterprise-node-finally-norsolid/8cdf234194282a75a7c07f9e9d5f7806/nsolid-enterprise-node-finally-norsolid.png").build()
-                    val response = client.newCall(request).execute()
-                    val filePath = filesDir.path + "/test.png"
-                    val outStream = File(filePath).absoluteFile.outputStream()
-                    val bitmap = BitmapFactory.decodeStream(response.body()?.byteStream())
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream)
-                } catch(e: IOException) {
-                    e.printStackTrace()
-                } catch(e: JSONException) {
-                    e.printStackTrace()
-                }
-
-                return res
-            }
-        }.execute()
-        return@async
-    }
-
     fun getUserInfo(callback:(Tweet) -> Unit): Deferred<Unit?> = async(CommonPool){
         Log.d("AsyncTest","start getUserInfo")
         val twitterApiClient = TwitterApiClient(OkHttpClient())
@@ -132,7 +108,6 @@ class MainActivity : AppCompatActivity() {
     fun goTimeLine(view: View){
         val intent =  Intent(this, TimeLineActivity::class.java)
         startActivity(intent)
-
     }
 
 

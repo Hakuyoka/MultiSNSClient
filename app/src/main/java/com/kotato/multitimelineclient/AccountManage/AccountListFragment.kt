@@ -38,10 +38,6 @@ class AccountListFragment(accunts: List<Account>) : ListFragment() {
                 adapter?.remove(p2)
             }
         }
-
-        this.view!!.findViewById<View>(R.id.one).setOnClickListener { adapter?.add("1", "button1", 0) }
-        this.view!!.findViewById<View>(R.id.two).setOnClickListener { adapter?.add("2", "button2", 1) }
-        this.view!!.findViewById<View>(R.id.three).setOnClickListener { adapter?.add("3", "button3") }
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {

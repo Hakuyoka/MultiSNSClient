@@ -4,12 +4,9 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import com.google.gson.JsonObject
 
 import com.kotato.multitimelineclient.R
 import com.twitter.sdk.android.core.*
@@ -19,13 +16,9 @@ import com.twitter.sdk.android.core.models.User
 import kotlinx.coroutines.experimental.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
 import org.json.JSONException
-import org.json.JSONObject
 import java.io.File
 import java.io.IOException
-import java.io.InputStream
-import java.net.URL
 import java.util.concurrent.CountDownLatch
 
 
@@ -56,10 +49,14 @@ class SelectService : AppCompatActivity() {
                     intent.putExtra("imageIconUrl",user.profileImageUrlHttps)
                     intent.putExtra("Account",Account(user.id.toString(),user.name,user.email,0,null,null,true,user.id.toString()+"_0.png"))
 
-                    //TODO SyncTackかawait/asyncで書き直す
                     val latch = CountDownLatch(1)
-                    getUserImage(user.profileImageUrlHttps, user.id.toString()+"_0"){
-                        latch.countDown()
+                    getImage(user.profileImageUrlHttps){
+                        bitmap ->
+                            val filePath = filesDir.path +"/"+ user.id.toString()+"_0" +".png"
+                            val outStream = File(filePath).absoluteFile.outputStream()
+                            bitmap?.compress(Bitmap.CompressFormat.PNG, 100, outStream)
+                            Log.d("image save", filePath)
+                            latch.countDown()
                     }
                     try {
                         latch.await()
@@ -117,30 +114,24 @@ class SelectService : AppCompatActivity() {
         return@async
     }
 
-    fun getUserImage(urlStr: String, fileName: String, callback:() -> Unit) : Deferred<Unit> =  async(CommonPool){
-        object: AsyncTask<Void, Void, String>() {
-            override fun doInBackground(vararg params: Void): String {
-                var res: String = ""
-                try {
-                    val request = Request.Builder().url(urlStr).build()
-                    val response = OkHttpClient().newCall(request).execute()
-                    val filePath = filesDir.path +"/"+ fileName +".png"
-                    val outStream = File(filePath).absoluteFile.outputStream()
-                    val bitmap = BitmapFactory.decodeStream(response.body()?.byteStream())
-                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream)
-                    Log.d("image save", filePath)
-                    callback()
-                } catch(e: IOException) {
-                    e.printStackTrace()
-                } catch(e: JSONException) {
-                    e.printStackTrace()
-                }
-
-                return res
-            }
-        }.execute()
-        return@async
+    /**
+     * HTTPを通して画像の取得
+     */
+    fun getImage(urlStr: String, callback:(Bitmap?) -> Unit) : Deferred<Any?> =  async(CommonPool){
+        println("start getImage")
+        var response :Any? = null
+        try {
+            val request = Request.Builder().url(urlStr).build()
+            val response = OkHttpClient().newCall(request).execute()
+            val bitmap = BitmapFactory.decodeStream(response.body()?.byteStream())
+            callback(bitmap)
+        } catch(e: IOException) {
+            e.printStackTrace()
+        } catch(e: JSONException) {
+            e.printStackTrace()
+        }
+        println("end getImage")
+        return@async response
     }
-
 
 }

@@ -5,11 +5,18 @@
     android:orientation="horizontal"
     tools:context="com.kotato.multitimelineclient.TimeLine.TimeLineItemFragment">
 
-    <ListView
-        android:id="@id/android:list"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:drawSelectorOnTop="false" />
+        android:layout_height="match_parent">
+
+        <ListView
+            android:id="@id/android:list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:drawSelectorOnTop="false" />
+    </android.support.v4.widget.SwipeRefreshLayout>
+
 
     <TextView
         android:id="@id/android:empty"

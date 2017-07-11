@@ -42,7 +42,7 @@ fun getUserInfo(callback:(Tweet) -> Unit): Deferred<Unit?> = async(CommonPool){
 }
 
 fun getUserImage(urlStr: String, callback:(Any?) -> Unit) : Deferred<Any?> =  async(CommonPool){
-    println("start getUserImage")
+    println("start getImage")
     var response :Any? = null
     var res: String = ""
     try {
@@ -56,7 +56,7 @@ fun getUserImage(urlStr: String, callback:(Any?) -> Unit) : Deferred<Any?> =  as
     } catch(e: JSONException) {
         e.printStackTrace()
     }
-    println("end getUserImage")
+    println("end getImage")
     return@async response
 }
 
@@ -69,7 +69,7 @@ fun main(args: Array<String>) {
 //    runBlocking {
 //        println("start closer")
 //
-//        val respose = getUserImage("http://qiita.com/k-kagurazaka@github/items/702c92bc3381af36db12"){
+//        val respose = getImage("http://qiita.com/k-kagurazaka@github/items/702c92bc3381af36db12"){
 //            print("callback")
 //        }.await()
 //        println(respose)

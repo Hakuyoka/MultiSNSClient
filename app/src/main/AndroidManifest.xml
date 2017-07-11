@@ -20,21 +20,12 @@
             android:name=".AccountManage.AccountsMangeActivity"
             android:label="@string/title_activity_accounts_mange"
             android:theme="@style/AppTheme.NoActionBar" />
-
-        <service
-            android:name=".Service.TwitterService"
-            android:enabled="true"
-            android:exported="true" />
-
         <activity android:name=".AccountManage.SelectService" />
-        <activity
-            android:name=".TimeLine.Main2Activity"
-            android:label="@string/title_activity_main2"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".TimeLine.TimeLineActivity"
             android:label="@string/title_activity_time_line"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".TimeLine.InputActivity"></activity>
     </application>
 
 </manifest>

@@ -1,8 +1,11 @@
 package com.kotato.multitimelineclient.TimeLine
 
+import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.util.Log
@@ -20,6 +23,7 @@ import com.twitter.sdk.android.tweetui.Timeline
 import kotlinx.coroutines.experimental.runBlocking
 
 class TimeLineActivity : AppCompatActivity() {
+    val SUBMIT_CODE = 100
     var listFragment : TimeLineItemFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,11 +34,10 @@ class TimeLineActivity : AppCompatActivity() {
 
         val fab = findViewById(R.id.fab) as FloatingActionButton
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
+            val intent =  Intent(this, InputActivity::class.java)
+            startActivityForResult(intent, 100)
+
         }
-
-
 
         listFragment = TimeLineItemFragment()
         fragmentManager.beginTransaction()
@@ -45,19 +48,20 @@ class TimeLineActivity : AppCompatActivity() {
             Log.d("Timeline get", Gson().toJson(it.get(0)).toString())
             val timeLineItem :List<TimeLineItem> = it.map {
                 it ->
-                    TimeLineItem(it.id, it.user.id, it.user.name, it.text, "")
+                   TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
+                           it.entities?.media?.filter { it -> it.type == "photo" }?.map { it -> it.mediaUrlHttps })
             }
 
             listFragment?.addAll(timeLineItem)
-
         }
+
     }
 
     fun getTimeLine(callback : (List<Tweet>) -> Unit){
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
         if(activeSession != null){
             val appClient = TwitterApiClient(activeSession)
-            val call = appClient.statusesService.homeTimeline(null,null,null, true, true, true, true)
+            val call = appClient.statusesService.homeTimeline(null,null,null, false, null, null, null)
             call?.enqueue(object : Callback<List<Tweet>>() {
                 override fun success(result: Result<List<Tweet>>) {
                     Log.d("Get Timeline Success", result.data.toString())
