@@ -1,5 +1,6 @@
 package com.kotato.multitimelineclient
 
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.AsyncTask
@@ -8,6 +9,7 @@ import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.models.Tweet
 import com.twitter.sdk.android.core.models.User
 import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.android.UI
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONException
@@ -18,8 +20,21 @@ import java.io.IOException
  * Created by kotato on 2017/07/06.
  */
 
+object AsyncModel {
+    fun returnTenAsync() = async(CommonPool) {
+        delay(1000)
+        return@async 10
+    }
 
-fun getUserInfo(callback:(Tweet) -> Unit): Deferred<Unit?> = async(CommonPool){
+    fun returnTwentyAsync() = async(CommonPool) {
+        delay(2000)
+        return@async 20
+    }
+}
+
+
+fun getUserInfo(callback:(Tweet) -> Unit) = async(CommonPool){
+    var resultstr:String = ""
     println("start getUserInfo")
     val twitterApiClient = TwitterApiClient(OkHttpClient())
     val statusesService = twitterApiClient?.statusesService
@@ -28,6 +43,7 @@ fun getUserInfo(callback:(Tweet) -> Unit): Deferred<Unit?> = async(CommonPool){
         override fun success(result: Result<Tweet>) {
             println(""+result.data.text)
             Log.i("Users", result.data.text)
+            resultstr = result.data.toString()
             callback.invoke(result.data)
         }
 
@@ -37,8 +53,7 @@ fun getUserInfo(callback:(Tweet) -> Unit): Deferred<Unit?> = async(CommonPool){
     })
 
     println("end getUserInfo")
-    return@async
-
+    return@async resultstr
 }
 
 fun getUserImage(urlStr: String, callback:(Any?) -> Unit) : Deferred<Any?> =  async(CommonPool){
@@ -60,12 +75,12 @@ fun getUserImage(urlStr: String, callback:(Any?) -> Unit) : Deferred<Any?> =  as
     return@async response
 }
 
-fun main(args: Array<String>) {
-    println("start")
-    getUserInfo{
-        tweet ->
-        print(tweet)
-    }
+fun main(args: Array<String>) = runBlocking<Unit>  {
+
+//    getUserInfo{
+//        tweet ->
+//        print(tweet)
+//    }
 //    runBlocking {
 //        println("start closer")
 //
@@ -76,7 +91,24 @@ fun main(args: Array<String>) {
 //        println("end closer")
 //
 //    }
-    println("end")
-
-    Thread.sleep(100000)
+//    println("start")
+//    launch(CommonPool){
+//        println(AsyncModel.returnTenAsync().await())
+//        val respose = getUserInfo{
+//            println("CallBack")
+//        }.await()
+//        println(respose)
+//        println("GoGo")
+//        println(AsyncModel.returnTwentyAsync().await())
+//    }
+//    println("end")
+//
+//    Thread.sleep(5000)
+    val jobs = List(100_000) { // create a lot of coroutines and list their jobs
+        launch(CommonPool) {
+            delay(1000L)
+            print(".")
+        }
+    }
+    jobs.forEach { it.join() }
 }

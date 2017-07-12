@@ -51,7 +51,7 @@ class AccountsMangeActivity : AppCompatActivity() {
 
         val authClient = TwitterAuthClient()
         val fab = findViewById(R.id.fab) as FloatingActionButton
-        fab.setOnClickListener(View.OnClickListener { view ->
+        fab.setOnClickListener({ view ->
             Log.d("Active Session Start", TwitterCore.getInstance().sessionManager.activeSession?.toString() ?: "null")
             authClient.cancelAuthorize()
 

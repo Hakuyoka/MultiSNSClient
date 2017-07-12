@@ -36,16 +36,34 @@ class TimeLineItemFragment : ListFragment(){
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater?.inflate(R.layout.fragment_time_line_item, container, false)
         val swipeContainer = view?.findViewById<View>(R.id.swipe_container) as SwipeRefreshLayout
-        swipeContainer.setOnRefreshListener(SwipeRefreshLayout.OnRefreshListener{
-            Log.d("Refresh Start", "tarttttt")
+        swipeContainer.setOnRefreshListener({
+            Log.d("Refresh Start",view.id.toString())
             TwitterService.getTimeLine {
-                swipeContainer.isRefreshing = false
-                adapter?.removeAll()
-                adapter?.addAll(it)
+                if(it != null){
+                    val insertTimeLine = margeTimeLine(it)
+                    swipeContainer.isRefreshing = false
+                    insertTimeLine.forEach {
+                        adapter?.insert(it,0)
+                    }
+                }
             }
         })
         return view
     }
+
+    fun margeTimeLine(timelineItems: List<TimeLineItem>): List<TimeLineItem>{
+        val itemIDs = mutableListOf<Long>()
+
+        if (adapter?.count ?: 0 > 0){
+            (0 .. (adapter?.count ?: 0) - 1)
+                    .map { adapter?.getItem(it) }
+                    .mapTo(itemIDs) { it?.id ?: 0L }
+            return timelineItems.filter { !itemIDs.contains(it.id) }
+        }
+
+        return ArrayList(0)
+    }
+
 
     fun addAll(timelineItems: List<TimeLineItem>){
         Log.d("Add TimeLine", timelineItems.size.toString())

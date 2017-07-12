@@ -10,8 +10,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.google.gson.Gson
 
 import com.kotato.multitimelineclient.R
+import com.kotato.multitimelineclient.Service.TwitterService
+import com.twitter.sdk.android.core.*
+import com.twitter.sdk.android.core.identity.TwitterAuthClient
+import com.twitter.sdk.android.core.models.User
+
 
 class AccountListFragment(accunts: List<Account>) : ListFragment() {
     val accounts = accunts
@@ -33,9 +39,22 @@ class AccountListFragment(accunts: List<Account>) : ListFragment() {
         }
 
         listView.onItemClickListener = object : AdapterView.OnItemClickListener{
-            override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                Log.d("click item", " $p2 $p3")
-                adapter?.remove(p2)
+            override fun onItemClick(p0: AdapterView<*>?, p1: View?, index: Int, p3: Long) {
+                Log.d("click item", " $index $p3")
+                val id = adapter?.getItem(index)?.id
+                if(id != null ){
+                    val session = TwitterService.getSession(id.toLong())
+                    if(session != null){
+                        TwitterCore.getInstance().sessionManager.activeSession = session
+                        TwitterService.getUserInfo {  }
+                        println(Gson().toJson(session))
+                    }else{
+                        val cliant = TwitterAuthClient()
+                        cliant.authorize(activity,session)
+                    }
+
+                }
+
             }
         }
     }

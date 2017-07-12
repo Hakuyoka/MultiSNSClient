@@ -43,6 +43,8 @@ class SelectService : AppCompatActivity() {
         loginButton?.callback = object : Callback<TwitterSession>() {
             override fun success(result: Result<TwitterSession>){
                 TwitterCore.getInstance().sessionManager.activeSession =  result.data
+                TwitterService.sessionList.put(result.data.id, result.data)
+
                 TwitterService.getUserInfo { accout ->
                     val intent = Intent(activity, AccountsMangeActivity::class.java)
                     intent.putExtra("Account", accout)

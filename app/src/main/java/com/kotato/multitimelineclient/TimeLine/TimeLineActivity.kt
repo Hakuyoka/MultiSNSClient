@@ -46,8 +46,10 @@ class TimeLineActivity : AppCompatActivity() {
                 .commit()
 
         TwitterService.getTimeLine {
-            Log.d("Timeline get", Gson().toJson(it.get(0)).toString())
-            listFragment?.addAll(it)
+            Log.d("Timeline get", Gson().toJson(it?.get(0)).toString())
+            if (it != null) {
+                listFragment?.addAll(it)
+            }
         }
 
     }

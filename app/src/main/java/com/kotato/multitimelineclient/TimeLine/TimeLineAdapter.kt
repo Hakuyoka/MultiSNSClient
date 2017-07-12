@@ -63,8 +63,6 @@ class TimeLineAdapter(context: Context, queue: RequestQueue, fragmentManager: Fr
         val imageListener = ImageLoader.getImageListener(snnIcon, R.drawable.twitter_logo_white_on_blue, R.drawable.twitter_logo_white_on_blue)
         imageLoader.get(item.userIcon, imageListener)
 
-        Log.d("has Text", item.text)
-
         val layout = view.findViewById<View>(R.id.media_container) as LinearLayout
 
         //ListViewは使い回されるので、一度リセット
@@ -72,9 +70,11 @@ class TimeLineAdapter(context: Context, queue: RequestQueue, fragmentManager: Fr
         var count = 1
         item.mediaUrls?.map {
             it ->
-                Log.d("has Media" + count, it)
+                Log.d("has Media" + count++, it)
 
                 val imageView = ImageView(context)
+                imageView.adjustViewBounds = true
+                imageView.maxHeight = 500
                 layout.addView(imageView)
 
                 //cancel
