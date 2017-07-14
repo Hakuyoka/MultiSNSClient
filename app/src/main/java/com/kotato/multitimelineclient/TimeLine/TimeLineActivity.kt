@@ -6,6 +6,7 @@ import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.util.Log
+import android.view.Menu
 import com.google.gson.Gson
 import com.kotato.multitimelineclient.Input.InputActivity
 
@@ -40,6 +41,13 @@ class TimeLineActivity : AppCompatActivity() {
         }
 
     }
+
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.navigation,menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
 
 
 }

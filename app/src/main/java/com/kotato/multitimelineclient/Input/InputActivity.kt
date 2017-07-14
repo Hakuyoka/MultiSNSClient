@@ -1,6 +1,8 @@
 package com.kotato.multitimelineclient.Input
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
@@ -14,6 +16,7 @@ import android.widget.LinearLayout
 import com.kotato.multitimelineclient.R
 import com.kotato.multitimelineclient.Service.TwitterService
 import com.kotato.multitimelineclient.getPathFromUri
+import com.mopub.volley.toolbox.ImageLoader
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.models.Tweet
 import kotlinx.coroutines.experimental.CommonPool
@@ -22,6 +25,8 @@ import kotlinx.coroutines.experimental.async
 class InputActivity : AppCompatActivity() {
 
     var mediaUriList: MutableList<String>? = null
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +52,7 @@ class InputActivity : AppCompatActivity() {
                 Log.d("Upload Image", "")
                 selectImage()
         }
+
     }
 
     fun submit(text: String ,callback:(Tweet) -> Unit) = async(CommonPool){
@@ -108,7 +114,12 @@ class InputActivity : AppCompatActivity() {
                                 adjustViewBounds = true
                                 maxHeight = 300
                                 setImageURI(uri)
+                                tag = uriText
+                                setOnClickListener {
+                                    makeAlartDialog(imageContainer, this, uriText).show()
+                                }
                             }
+
                     imageContainer.addView(imageView)
 
                 }
@@ -116,7 +127,18 @@ class InputActivity : AppCompatActivity() {
         }
     }
 
+    private fun makeAlartDialog(imageContainer: LinearLayout, imageView: ImageView, uriText: String):AlertDialog{
+        val alartDialod = AlertDialog.Builder(this)
+        alartDialod.setMessage("削除しますか？")
 
+        alartDialod.setPositiveButton("OK", { dialogInterface, i ->
+            imageContainer.removeView(imageView)
+            mediaUriList?.remove(uriText)
+        })
 
+        alartDialod.setNegativeButton("Cancel", { dialogInterface, i ->
 
+        })
+        return alartDialod.create()
+    }
 }

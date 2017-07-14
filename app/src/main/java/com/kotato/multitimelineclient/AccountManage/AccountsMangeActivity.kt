@@ -11,6 +11,7 @@ import com.kotato.multitimelineclient.R
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.identity.TwitterAuthClient
 import android.content.Intent
+import android.view.Menu
 
 
 class AccountsMangeActivity : AppCompatActivity() {
@@ -28,9 +29,8 @@ class AccountsMangeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_accounts_mange)
         val toolbar = findViewById(R.id.toolbar) as Toolbar
+        toolbar.title = ""
         setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
-        supportActionBar?.setDisplayShowCustomEnabled(true)
 
         fragmentManager.beginTransaction()
                 .add(R.id.list_fragment_container, listFragment, "fragment_main")
@@ -48,6 +48,13 @@ class AccountsMangeActivity : AppCompatActivity() {
             Log.d("Active Session End", TwitterCore.getInstance().sessionManager.activeSession?.toString() ?: "null")
         })
     }
+
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.navigation,menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)

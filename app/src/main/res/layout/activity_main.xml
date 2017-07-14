@@ -4,7 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.kotato.multitimelineclient.MainActivity">
+    tools:context="com.kotato.multitimelineclient.MainActivity"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar" >
+
+
+    </android.support.v7.widget.Toolbar>
+
 
     <Button
         android:id="@+id/timeLine"
@@ -26,7 +39,7 @@
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="getUserImage"
+        android:onClick="pushLocal"
         android:text="Get Image" />
 
     <Button
