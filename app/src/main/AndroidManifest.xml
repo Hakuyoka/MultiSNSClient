@@ -27,7 +27,7 @@
             android:name=".TimeLine.TimeLineActivity"
             android:label="@string/title_activity_time_line"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".TimeLine.InputActivity"></activity>
+        <activity android:name=".Input.InputActivity"></activity>
     </application>
 
 

@@ -1,4 +1,4 @@
-package com.kotato.multitimelineclient.TimeLine
+package com.kotato.multitimelineclient.Input
 
 import android.app.Activity
 import android.content.Intent
@@ -9,6 +9,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 
 import com.kotato.multitimelineclient.R
 import com.kotato.multitimelineclient.Service.TwitterService
@@ -17,7 +18,6 @@ import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.models.Tweet
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
 
 class InputActivity : AppCompatActivity() {
 
@@ -100,10 +100,23 @@ class InputActivity : AppCompatActivity() {
                 val uriText = getPathFromUri(this, uri)
                 if(uriText != null) {
                     mediaUriList?.add(uriText)
+
+                    val imageContainer = findViewById(R.id.will_upload_images) as LinearLayout
+
+                    val imageView = ImageView(baseContext)
+                            .apply {
+                                adjustViewBounds = true
+                                maxHeight = 300
+                                setImageURI(uri)
+                            }
+                    imageContainer.addView(imageView)
+
                 }
             }
         }
     }
+
+
 
 
 }

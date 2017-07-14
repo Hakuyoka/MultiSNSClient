@@ -37,10 +37,12 @@
         android:id="@+id/fab"
         android:layout_width="60dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|right|end"
-        app:backgroundTint="@android:color/transparent"
-        app:elevation="24dp"
-        app:fabSize="normal"
-        app:srcCompat="@android:drawable/ic_menu_add" />
+        android:layout_gravity="center_vertical|center_horizontal"
+        app:backgroundTint="@color/tw__blue_pressed"
+        app:elevation="0dp"
+        app:layout_anchor="@+id/list_fragment_container"
+        app:layout_anchorGravity="bottom|right"
+        app:rippleColor="@color/tw__composer_white"
+        app:srcCompat="@drawable/very_basic_plus_icon" />
 
 </android.support.design.widget.CoordinatorLayout>

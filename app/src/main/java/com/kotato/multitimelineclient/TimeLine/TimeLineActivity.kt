@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.util.Log
 import com.google.gson.Gson
+import com.kotato.multitimelineclient.Input.InputActivity
 
 import com.kotato.multitimelineclient.R
 import com.kotato.multitimelineclient.Service.TwitterService
