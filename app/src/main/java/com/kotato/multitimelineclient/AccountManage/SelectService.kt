@@ -7,14 +7,17 @@ import android.graphics.BitmapFactory
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.google.gson.Gson
 
 import com.kotato.multitimelineclient.R
 import com.kotato.multitimelineclient.Service.TwitterService
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.identity.TwitterAuthClient
 import com.twitter.sdk.android.core.identity.TwitterLoginButton
+import com.twitter.sdk.android.core.internal.persistence.SerializationStrategy
 import com.twitter.sdk.android.core.models.User
 import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.android.UI
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONException
@@ -25,9 +28,10 @@ import java.util.concurrent.CountDownLatch
 
 class SelectService : AppCompatActivity() {
 
-    var loginButton : TwitterLoginButton? = null
-    var twitterApiClient : TwitterApiClient? = null
-    val client = OkHttpClient()
+    val gson = Gson()
+    val loginButton : TwitterLoginButton by lazy {
+        findViewById(R.id.login_button) as TwitterLoginButton
+    }
 
     init {
 
@@ -39,35 +43,23 @@ class SelectService : AppCompatActivity() {
         val authClient = TwitterAuthClient()
         authClient.cancelAuthorize()
         val activity = this
-        loginButton = findViewById(R.id.login_button) as TwitterLoginButton
-        loginButton?.callback = object : Callback<TwitterSession>() {
+        loginButton.callback = object : Callback<TwitterSession>() {
             override fun success(result: Result<TwitterSession>){
                 TwitterCore.getInstance().sessionManager.activeSession =  result.data
                 TwitterService.sessionList.put(result.data.id, result.data)
-
-                TwitterService.getUserInfo { accout ->
+                val activity = activity
+                launch(UI){
+                    val account = TwitterService.getUserInfo{}.await()
+                    account?.twitterSession = gson.toJson(result.data)
                     val intent = Intent(activity, AccountsMangeActivity::class.java)
-                    intent.putExtra("Account", accout)
-
-                    val latch = CountDownLatch(1)
-                    if (accout != null){
-
-                        TwitterService.getImage(accout.imageUrl) {
-                            bitmap ->
-                            val filePath = filesDir.path + "/" + accout.id.toString() + "_0" + ".png"
-                            val outStream = File(filePath).absoluteFile.outputStream()
-                            bitmap?.compress(Bitmap.CompressFormat.PNG, 100, outStream)
-                            Log.d("image save", filePath)
-                            latch.countDown()
-                        }
-
-                        try {
-                            latch.await()
-                        } catch (e: InterruptedException) {
-                            e.printStackTrace()
-                        }
+                    intent.putExtra("Account", account)
+                    if (account != null){
+                        val bitmap = TwitterService.getImage(account.imageUrl) {}.await()
+                        val filePath = filesDir.path + "/" + account.id + "_0" + ".png"
+                        val outStream = File(filePath).absoluteFile.outputStream()
+                        bitmap?.compress(Bitmap.CompressFormat.PNG, 100, outStream)
+                        Log.d("image save", filePath)
                     }
-
                     setResult(Activity.RESULT_OK,intent)
                     finish()
                 }
@@ -81,6 +73,6 @@ class SelectService : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         super.onActivityResult(requestCode, resultCode, data)
-        loginButton?.onActivityResult(requestCode, resultCode, data)
+        loginButton.onActivityResult(requestCode, resultCode, data)
     }
 }

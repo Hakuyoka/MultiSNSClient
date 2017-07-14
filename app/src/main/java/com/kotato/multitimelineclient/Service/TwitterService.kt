@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.view.View
+import com.google.gson.Gson
 import com.kotato.multitimelineclient.AccountManage.Account
 import com.kotato.multitimelineclient.TimeLine.TimeLineItem
 import com.twitter.sdk.android.core.*
@@ -29,6 +30,7 @@ import java.util.concurrent.CountDownLatch
 
 object TwitterService: SNNService{
 
+    val gson = Gson()
     var twitterApiClient: TwitterApiClient? = null
     val sessionList: MutableMap<Long,TwitterSession> = mutableMapOf()
 
@@ -84,20 +86,28 @@ object TwitterService: SNNService{
         var account: Account? = null
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
         if(activeSession != null) {
-            twitterApiClient = TwitterApiClient(TwitterCore.getInstance().sessionManager.activeSession)
+            twitterApiClient = TwitterApiClient(activeSession)
             val statusesService = twitterApiClient?.accountService
             val call = statusesService?.verifyCredentials(false, false, false)
+            //TODO CountDownLatchでラッピングしてasync/awaitを使うか そのままコールバックにするか
+            var latch = CountDownLatch(1)
             call?.enqueue(object : Callback<User>() {
                 override fun success(result: Result<User>) {
                     Log.i("Users", result.data.profileImageUrl)
                     val user = result.data
-                    account = Account(user.id.toString(),user.name,user.email,0,null,null,true,user.profileImageUrlHttps)
+                    account = Account(user.id.toString(),user.name,user.email,0,null,null,true,user.profileImageUrlHttps, gson.toJson(activeSession))
                     callback(account)
+                    latch.countDown()
                 }
                 override fun failure(exception: TwitterException) {
 
                 }
             })
+            try {
+                latch.await()
+            }catch (e:InterruptedException){
+                e.printStackTrace()
+            }
         }
 
         return@async account

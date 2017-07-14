@@ -21,16 +21,14 @@ import com.mopub.volley.toolbox.Volley
 
 class TimeLineItemFragment : ListFragment(){
 
-    var adapter :TimeLineAdapter? = null
+    val adapter :TimeLineAdapter by lazy {
+        TimeLineAdapter(activity, Volley.newRequestQueue(activity), fragmentManager)
+    }
+
 
     override fun onStart() {
         super.onStart()
-
-        if(adapter == null){
-            //アダプターの初期化
-            adapter = TimeLineAdapter(activity, Volley.newRequestQueue(activity), fragmentManager)
-            listAdapter = adapter
-        }
+        listAdapter = adapter
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -43,7 +41,7 @@ class TimeLineItemFragment : ListFragment(){
                     val insertTimeLine = margeTimeLine(it)
                     swipeContainer.isRefreshing = false
                     insertTimeLine.forEach {
-                        adapter?.insert(it,0)
+                        adapter.insert(it,0)
                     }
                 }
             }
@@ -54,10 +52,10 @@ class TimeLineItemFragment : ListFragment(){
     fun margeTimeLine(timelineItems: List<TimeLineItem>): List<TimeLineItem>{
         val itemIDs = mutableListOf<Long>()
 
-        if (adapter?.count ?: 0 > 0){
-            (0 .. (adapter?.count ?: 0) - 1)
-                    .map { adapter?.getItem(it) }
-                    .mapTo(itemIDs) { it?.id ?: 0L }
+        if (adapter.count > 0){
+            (0 .. adapter.count - 1)
+                    .map { adapter.getItem(it) }
+                    .mapTo(itemIDs) { it.id }
             return timelineItems.filter { !itemIDs.contains(it.id) }
         }
 
@@ -67,12 +65,12 @@ class TimeLineItemFragment : ListFragment(){
 
     fun addAll(timelineItems: List<TimeLineItem>){
         Log.d("Add TimeLine", timelineItems.size.toString())
-        adapter?.addAll(timelineItems)
+        adapter.addAll(timelineItems)
     }
 
 
     fun removeAll(){
-        adapter?.removeAll()
+        adapter.removeAll()
     }
 
 

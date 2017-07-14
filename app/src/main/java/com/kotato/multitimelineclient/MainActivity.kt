@@ -15,7 +15,7 @@ import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.View
 import com.google.gson.JsonObject
-import com.kotato.multitimelineclient.AccountManage.AccountsMangeActivity
+import com.kotato.multitimelineclient.AccountManage.*
 import com.kotato.multitimelineclient.Service.TwitterService
 import com.kotato.multitimelineclient.TimeLine.TimeLineActivity
 import com.twitter.sdk.android.core.*
@@ -31,8 +31,6 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.CountDownLatch
 
-
-var client = OkHttpClient()
 
 class MainActivity : AppCompatActivity() {
 
@@ -159,17 +157,9 @@ class MainActivity : AppCompatActivity() {
 
 
     fun getUserImage(view: View){
-        launch(CommonPool){
-            println("start")
-            println(AsyncModel.returnTenAsync().await())
-            val respose = getUserInfo{
-                println("CallBack")
-            }.await()
-            println("response:"+respose)
-            println("GoGo")
-            println(AsyncModel.returnTwentyAsync().await())
-            println("end")
-        }
+        val list = mutableListOf<Account>()
+        list.add(Account("","","",0,null,null,false,"",null))
+        list.save(filesDir)
     }
 
 

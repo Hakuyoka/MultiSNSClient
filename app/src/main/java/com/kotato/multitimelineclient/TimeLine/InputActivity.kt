@@ -93,9 +93,8 @@ class InputActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK && intent != null) {
-            var uri: Uri? = null
-            if (data != null) {
-                uri = data?.data
+            var uri: Uri? = data?.data
+            if (uri != null) {
                 Log.d("Select Media", getPathFromUri(this, uri))
                 //クラウド上のファイルなどが渡された場合は変換ができないため一度コンバートする
                 val uriText = getPathFromUri(this, uri)

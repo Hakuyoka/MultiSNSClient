@@ -1,10 +1,8 @@
 package com.kotato.multitimelineclient.AccountManage
 
 import android.app.ListFragment
-import android.content.Context
-import android.net.Uri
+import android.content.Intent
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,47 +12,51 @@ import com.google.gson.Gson
 
 import com.kotato.multitimelineclient.R
 import com.kotato.multitimelineclient.Service.TwitterService
+import com.kotato.multitimelineclient.TimeLine.TimeLineActivity
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.identity.TwitterAuthClient
-import com.twitter.sdk.android.core.models.User
 
 
-class AccountListFragment(accunts: List<Account>) : ListFragment() {
-    val accounts = accunts
+class AccountListFragment(accounts: List<Account>) : ListFragment() {
 
-    var adapter : AccountListAdapter? = null
+    val gson = Gson()
 
-    init {
-
+    val adapter : AccountListAdapter by lazy {
+        AccountListAdapter(activity).apply {
+            addAll(accounts)
+        }
     }
 
     override fun onStart() {
         super.onStart()
 
-        if(adapter == null){
-            //アダプターの初期化
-            adapter = AccountListAdapter(activity)
-            listAdapter = adapter
-            adapter?.addAll(accounts)
-        }
+        listAdapter = adapter
+        listView.onItemClickListener = AdapterView.OnItemClickListener { p0, p1, index, p3 ->
+            Log.d("click item", " $index $p3")
+            //最初オブジェクトそのまま保存する必要があるかと思ったけど、
+            //これでいけるっぽい
+            //内部のシリアライザーがGson使ってるだけだった。
+            val session = gson.fromJson(adapter.getItem(index).twitterSession, TwitterSession::class.java)
+            if(session != null){
+                TwitterCore.getInstance().sessionManager.activeSession = session
+                TwitterService.getUserInfo {  }
+                println(Gson().toJson(session))
 
-        listView.onItemClickListener = object : AdapterView.OnItemClickListener{
-            override fun onItemClick(p0: AdapterView<*>?, p1: View?, index: Int, p3: Long) {
-                Log.d("click item", " $index $p3")
-                val id = adapter?.getItem(index)?.id
-                if(id != null ){
-                    val session = TwitterService.getSession(id.toLong())
-                    if(session != null){
-                        TwitterCore.getInstance().sessionManager.activeSession = session
-                        TwitterService.getUserInfo {  }
-                        println(Gson().toJson(session))
-                    }else{
-                        val cliant = TwitterAuthClient()
-                        cliant.authorize(activity,session)
+                val intent = Intent(activity, TimeLineActivity::class.java)
+                startActivity(intent)
+
+            }else{
+                val cliant = TwitterAuthClient()
+                cliant.authorize(activity, object : Callback<TwitterSession>(){
+                    override fun success(result: Result<TwitterSession>?) {
+                        val intent = Intent(activity, TimeLineActivity::class.java)
+                        startActivity(intent)
                     }
 
-                }
-
+                    override fun failure(exception: TwitterException?) {
+                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                    }
+                })
             }
         }
     }
@@ -64,10 +66,15 @@ class AccountListFragment(accunts: List<Account>) : ListFragment() {
     }
 
     fun addItem(accunt: Account) {
-        adapter?.add(accunt)
+        adapter.add(accunt)
     }
 
     fun addAll(accunts: List<Account>) {
-        adapter?.addAll(accunts)
+        adapter.addAll(accunts)
+    }
+
+    fun replaceItem(account: Account,index: Int){
+        adapter.remove(index)
+        adapter.insert(account,index)
     }
 }
