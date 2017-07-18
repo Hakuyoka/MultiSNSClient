@@ -74,4 +74,9 @@ class TimeLineItemFragment : ListFragment(){
     }
 
 
+    fun getAll():List<TimeLineItem>{
+        return adapter.getAll()
+    }
+
+
 }

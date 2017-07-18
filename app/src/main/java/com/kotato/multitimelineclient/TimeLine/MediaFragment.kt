@@ -14,8 +14,7 @@ import com.kotato.multitimelineclient.R
 import com.mopub.volley.toolbox.ImageLoader
 import java.net.URL
 
-class MediaFragment(imageLoader : ImageLoader, url: String) : Fragment() {
-    val imageLoader = imageLoader
+class MediaFragment(val imageLoader : ImageLoader, url: String) : Fragment() {
     val url = url
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {

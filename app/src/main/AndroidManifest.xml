@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.kotato.multitimelineclient">
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -10,7 +11,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+        android:theme="@style/Theme.AppCompat.NoActionBar">
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,14 +28,19 @@
             android:name=".TimeLine.TimeLineActivity"
             android:label="@string/title_activity_time_line"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".Input.InputActivity"></activity>
+        <activity android:name=".Input.InputActivity" />
 
         <receiver android:name=".Push.NotificationReceiver">
             <intent-filter>
-                <action android:name="com.kotato.localpush"/>
+                <action android:name="com.kotato.localpush" />
             </intent-filter>
         </receiver>
-    </application>
 
+        <activity
+            android:name=".Media.MediaTabbedActivity"
+            android:label="@string/title_activity_media_tabbed"
+            android:theme="@style/AppTheme.Translucent">
+        </activity>
+    </application>
 
 </manifest>

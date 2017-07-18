@@ -23,6 +23,7 @@ import android.view.Menu
 import android.view.View
 import com.google.gson.JsonObject
 import com.kotato.multitimelineclient.AccountManage.*
+import com.kotato.multitimelineclient.Media.MediaTabbedActivity
 import com.kotato.multitimelineclient.Push.ACTION_LOCAL_PUSH
 import com.kotato.multitimelineclient.Push.NotificationReceiver
 import com.kotato.multitimelineclient.Push.REQ_CODE
@@ -61,8 +62,14 @@ class MainActivity : AppCompatActivity() {
         val options = BitmapFactory.Options().apply {
             inMutable = true
         }
-        val bitmap = BitmapFactory.decodeFile(filesDir.path + "/" + "103595510_0" + ".png",options)
+        println(TwitterCore.getInstance().sessionManager.activeSession.userId)
+        val accountList = readAccountList(filesDir)
+        val targetAccount = accountList.find { (if(it.id == "") 0L else it.id?.toLong()) ==  TwitterCore.getInstance().sessionManager.activeSession.userId}
+        var bitmap = BitmapFactory.decodeFile(filesDir.path + "/" + targetAccount?.id + "_" + targetAccount?.type + ".png",options)
+        print(targetAccount?.name)
+        bitmap.density = 240
         val drawable = BitmapDrawable(resources,bitmap)
+        println(drawable.minimumWidth)
         toolbar.setNavigationIcon(drawable)
         setSupportActionBar(toolbar)
 
@@ -105,29 +112,35 @@ class MainActivity : AppCompatActivity() {
 //            }.await()
 //            Log.d("AsyncTest","end in")
 //        }
-//        Log.d("AsyncTest","end")
-        val REQUEST_CODE = 1
-        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_CODE)
-        val permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+////        Log.d("AsyncTest","end")
+//        val REQUEST_CODE = 1
+//        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_CODE)
+//        val permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+//
+//        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+//
+//            // Android 6.0 のみ、該当パーミッションが許可されていない場合
+//
+//            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+//                // パーミッションが必要であることを明示するアプリケーション独自のUIを表示
+//            }
+//
+//        } else {
+//            // 許可済みの場合、もしくはAndroid 6.0以前
+//            // パーミッションが必要な処理
+//        }
+//
+//
+//        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+//        intent.addCategory(Intent.CATEGORY_OPENABLE)
+//        intent.type = "image/*"
+//        startActivityForResult(intent,1101)
 
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-
-            // Android 6.0 のみ、該当パーミッションが許可されていない場合
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                // パーミッションが必要であることを明示するアプリケーション独自のUIを表示
-            }
-
-        } else {
-            // 許可済みの場合、もしくはAndroid 6.0以前
-            // パーミッションが必要な処理
-        }
-
-
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.type = "image/*"
-        startActivityForResult(intent,1101)
+//        TwitterService.getMentions {  }
+//
+//        val intent =  Intent(this, MediaTabbedActivity::class.java)
+//        intent.putExtra("uris", arrayListOf("1","2","3","3"))
+//        startActivity(intent)
 
     }
 

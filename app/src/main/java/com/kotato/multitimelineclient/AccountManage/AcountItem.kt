@@ -1,5 +1,6 @@
 package com.kotato.multitimelineclient.AccountManage
 
+import android.graphics.BitmapFactory
 import android.media.Image
 import com.twitter.sdk.android.R
 import android.graphics.drawable.Drawable
@@ -7,6 +8,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
 import com.twitter.sdk.android.core.TwitterAuthToken
+import com.twitter.sdk.android.core.TwitterCore
 import com.twitter.sdk.android.core.TwitterSession
 import java.io.*
 
@@ -60,6 +62,8 @@ fun readAccountList(filesDir: File): List<Account>{
 
     return ois.readObject() as List<Account>
 }
+
+
 
 data class Account(val id: String, val name: String, val email: String? = "", val type: Int = 0,
                    val image: Drawable? = null, val serviceIcon : Drawable? = null, var isSelected : Boolean = false, val imageUrl: String = "",

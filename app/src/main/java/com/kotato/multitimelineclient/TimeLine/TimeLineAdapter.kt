@@ -3,6 +3,7 @@ package com.kotato.multitimelineclient.TimeLine
 import android.app.Fragment
 import android.app.FragmentManager
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.text.Layout
 import android.util.Log
@@ -14,18 +15,22 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.kotato.multitimelineclient.Media.MediaTabbedActivity
 import com.kotato.multitimelineclient.R
 import com.mopub.volley.RequestQueue
 import com.mopub.volley.toolbox.ImageLoader
+import java.io.ByteArrayOutputStream
+import java.io.ObjectOutput
+import java.io.ObjectOutputStream
+import java.sql.Time
 
 /**
  * Created by kotato on 2017/07/06.
  */
 val IMAGE_CHACH_MAX_SIZE : Int = 10 * 1024 * 1024
-class TimeLineAdapter(context: Context, queue: RequestQueue, fragmentManager: FragmentManager) : ArrayAdapter<TimeLineItem>(context, 0) {
+class TimeLineAdapter(context: Context,val queue: RequestQueue,val fragmentManager: FragmentManager) : ArrayAdapter<TimeLineItem>(context, 0) {
     val resource = R.layout.time_line_layout
     val imageLoader : ImageLoader = ImageLoader(queue, MyImageCache(IMAGE_CHACH_MAX_SIZE))
-    val fragmentManager = fragmentManager
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         var view : View
@@ -68,11 +73,26 @@ class TimeLineAdapter(context: Context, queue: RequestQueue, fragmentManager: Fr
         //ListViewは使い回されるので、一度リセット
         layout.removeAllViews()
         var count = 1
-        item.mediaUrls?.map {
-            it ->
+        var uris = arrayListOf<String>()
+        if(item.mediaUrls != null && item.mediaUrls.size > 0){
+//            val baos = ByteArrayOutputStream()
+//            val oos = ObjectOutputStream(baos)
+//            oos.writeObject(imageListener)
+//            oos.close()
+
+            uris.addAll(item.mediaUrls?.toList())
+            item.mediaUrls?.map {
+                it ->
                 Log.d("has Media" + count++, it)
 
                 val imageView = ImageView(context)
+//                imageView.setOnClickListener {
+//                    view ->
+//                    val intent = Intent(context, MediaTabbedActivity::class.java)
+//                    intent.putExtra("uris",uris)
+//                    intent.putExtra("imageLoaderByteArray",baos.toByteArray())
+//                    context.startActivity(intent)
+//                }
                 imageView.adjustViewBounds = true
                 imageView.maxHeight = 500
                 layout.addView(imageView)
@@ -84,6 +104,7 @@ class TimeLineAdapter(context: Context, queue: RequestQueue, fragmentManager: Fr
                 }
                 val imageListener = ImageLoader.getImageListener(imageView, R.color.tw__seekbar_thumb_outer_color, R.color.tw__seekbar_thumb_outer_color)
                 imageLoader.get(it, imageListener)
+            }
         }
 
         return view
@@ -109,6 +130,11 @@ class TimeLineAdapter(context: Context, queue: RequestQueue, fragmentManager: Fr
         }
     }
 
+    fun getAll(): List<TimeLineItem> {
+        return (0..count-1).map {
+            getItem(it)
+        }
+    }
 
 }
 

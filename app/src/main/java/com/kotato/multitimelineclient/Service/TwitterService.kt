@@ -34,12 +34,18 @@ object TwitterService: SNNService{
     var twitterApiClient: TwitterApiClient? = null
     val sessionList: MutableMap<Long,TwitterSession> = mutableMapOf()
 
-    override fun getTimeLine(callback : (List<TimeLineItem>?) -> Unit) = async(CommonPool){
-        var timeLineItems: List<TimeLineItem>? = null
+    /***
+     * ログインユーザのホームタイムラインを取得
+     * @param callback
+     */
+    override fun getTimeLine(callback : (List<TimeLineItem>) -> Unit) = async(CommonPool){
+        var timeLineItems: List<TimeLineItem> = listOf()
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
         if(activeSession != null){
             val appClient = TwitterApiClient(activeSession)
             val call = appClient.statusesService.homeTimeline(null,null,null, false, null, null, null)
+            var latch = CountDownLatch(1)
+
             call?.enqueue(object : Callback<List<Tweet>>() {
                 override fun success(result: Result<List<Tweet>>) {
                     Log.d("Get Timeline Success", result.data.toString())
@@ -49,11 +55,103 @@ object TwitterService: SNNService{
                                 it.extendedEntities?.media?.filter { it -> it.type == "photo" }?.map { it -> it.mediaUrlHttps })
                     }
                     callback.invoke(timeLineItems)
+                    latch.countDown()
                 }
 
                 override fun failure(exception: TwitterException) {
+                    Log.e("Get Timeline Failur", exception.toString())
+
                 }
             })
+
+            try {
+                latch.await()
+            }catch (e:InterruptedException){
+                e.printStackTrace()
+            }
+
+        }
+        return@async timeLineItems
+    }
+
+    /***
+     * ログインユーザへのメンションを取得
+     * @param callback
+     *
+     */
+    fun getMentions(callback : (List<TimeLineItem>) -> Unit) = async(CommonPool){
+        var timeLineItems: List<TimeLineItem> = listOf()
+        val activeSession = TwitterCore.getInstance().sessionManager.activeSession
+        if(activeSession != null){
+            val appClient = TwitterApiClient(activeSession)
+            val call = appClient.statusesService.mentionsTimeline(null,null,null,null,null,null)
+
+            var latch = CountDownLatch(1)
+            call?.enqueue(object : Callback<List<Tweet>>() {
+                override fun success(result: Result<List<Tweet>>) {
+                    Log.d("Get Mentions Success", gson.toJson(result.data))
+                    timeLineItems = result.data.map {
+                        it ->
+                        TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
+                                it.extendedEntities?.media?.filter { it -> it.type == "photo" }?.map { it -> it.mediaUrlHttps })
+                    }
+
+                    callback.invoke(timeLineItems)
+                    latch.countDown()
+                }
+
+                override fun failure(exception: TwitterException) {
+                    Log.e("Get Timeline Failur", exception.toString())
+
+                }
+            })
+
+
+            try {
+                latch.await()
+            }catch (e:InterruptedException){
+                e.printStackTrace()
+            }
+        }
+        return@async timeLineItems
+    }
+
+    /**
+     * ログインユーザのファボリストを取得
+     * @param callback
+     */
+    fun getFavoriteList(callback : (List<TimeLineItem>) -> Unit) = async(CommonPool){
+        var timeLineItems: List<TimeLineItem> = listOf()
+        val activeSession = TwitterCore.getInstance().sessionManager.activeSession
+        if(activeSession != null){
+            val appClient = TwitterApiClient(activeSession)
+            val call = appClient.favoriteService.list(null, null, null, null, null, null)
+
+            var latch = CountDownLatch(1)
+            call?.enqueue(object : Callback<List<Tweet>>() {
+                override fun success(result: Result<List<Tweet>>) {
+                    Log.d("Get Mentions Success", gson.toJson(result.data))
+                    timeLineItems = result.data.map {
+                        it ->
+                        TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
+                                it.extendedEntities?.media?.filter { it -> it.type == "photo" }?.map { it -> it.mediaUrlHttps })
+                    }
+
+                    callback.invoke(timeLineItems)
+                    latch.countDown()
+                }
+
+                override fun failure(exception: TwitterException) {
+                    Log.e("Get Timeline Failur", exception.toString())
+                }
+            })
+
+
+            try {
+                latch.await()
+            }catch (e:InterruptedException){
+                e.printStackTrace()
+            }
         }
         return@async timeLineItems
     }

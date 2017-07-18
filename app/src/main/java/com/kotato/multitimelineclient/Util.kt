@@ -14,6 +14,9 @@ import android.provider.MediaStore
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.PermissionChecker
 import android.util.Log
+import android.graphics.Bitmap
+import android.graphics.Matrix
+
 
 /**
  * Created by kotato on 2017/07/12.
@@ -74,3 +77,41 @@ fun getDataColumn(context: Context, uri: Uri, selection: String?,
     return null
 }
 
+
+/**
+ * 画像リサイズ
+ * @param bitmap 変換対象ビットマップ
+ * *
+ * @param newWidth 変換サイズ横
+ * *
+ * @param newHeight 変換サイズ縦
+ * *
+ * @return 変換後Bitmap
+ */
+fun resize(bitmap: Bitmap?, newWidth: Int, newHeight: Int): Bitmap? {
+
+    if (bitmap == null) {
+        return null
+    }
+
+    val oldWidth = bitmap.width
+    val oldHeight = bitmap.height
+
+    if (oldWidth < newWidth && oldHeight < newHeight) {
+        // 縦も横も指定サイズより小さい場合は何もしない
+        return bitmap
+    }
+
+    val scaleWidth = newWidth.toFloat() / oldWidth
+    val scaleHeight = newHeight.toFloat() / oldHeight
+    val scaleFactor = Math.min(scaleWidth, scaleHeight)
+
+    val scale = Matrix()
+    scale.postScale(scaleFactor, scaleFactor)
+
+    val resizeBitmap = Bitmap.createBitmap(bitmap, 0, 0, oldWidth, oldHeight, scale, false)
+    bitmap.recycle()
+
+    return resizeBitmap
+
+}

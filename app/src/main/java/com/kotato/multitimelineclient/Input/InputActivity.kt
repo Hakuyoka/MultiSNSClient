@@ -73,13 +73,14 @@ class InputActivity : AppCompatActivity() {
         val call = statusesService?.update(text,  null, false, null, null, null, false, null, medisIdStr)
         call?.enqueue(object : Callback<Tweet>() {
             override fun success(result: Result<Tweet>) {
-                Log.i("Tweet", result.data.text)
+                Log.i("Tweet success", result.data.text)
                 var intent = Intent()
                 setResult(Activity.RESULT_OK,intent)
                 finish()
             }
 
             override fun failure(exception: TwitterException) {
+                Log.i("Tweet failure", exception.toString())
                 var intent = Intent()
                 setResult(Activity.RESULT_CANCELED,intent)
                 finish()
