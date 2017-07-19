@@ -31,9 +31,6 @@ import java.util.concurrent.CountDownLatch
 object TwitterService: SNNService{
 
     val gson = Gson()
-    var twitterApiClient: TwitterApiClient? = null
-    val sessionList: MutableMap<Long,TwitterSession> = mutableMapOf()
-
     /***
      * ログインユーザのホームタイムラインを取得
      * @param callback
@@ -184,8 +181,8 @@ object TwitterService: SNNService{
         var account: Account? = null
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
         if(activeSession != null) {
-            twitterApiClient = TwitterApiClient(activeSession)
-            val statusesService = twitterApiClient?.accountService
+            val twitterApiClient = TwitterApiClient(activeSession)
+            val statusesService = twitterApiClient.accountService
             val call = statusesService?.verifyCredentials(false, false, false)
             //TODO CountDownLatchでラッピングしてasync/awaitを使うか そのままコールバックにするか
             var latch = CountDownLatch(1)
@@ -233,7 +230,7 @@ object TwitterService: SNNService{
 
             //TODO CountDownLatchでラッピングしてasync/awaitを使うか そのままコールバックにするか
             var latch = CountDownLatch(1)
-            twitterApiClient = TwitterApiClient(TwitterCore.getInstance().sessionManager.activeSession)
+            val twitterApiClient = TwitterApiClient(TwitterCore.getInstance().sessionManager.activeSession)
             val mediaService = twitterApiClient?.mediaService
             val file = File(uri)
             val media = RequestBody.create(MediaType.parse("image/jpeg"), file.readBytes())
@@ -256,14 +253,6 @@ object TwitterService: SNNService{
         }
 
         return@async mediaStr
-    }
-
-    fun hasSession(id: Long): Boolean{
-        return sessionList.containsKey(id)
-    }
-
-    fun getSession(id: Long): TwitterSession?{
-        return sessionList.get(id)
     }
 
 }

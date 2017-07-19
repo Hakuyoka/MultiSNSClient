@@ -1,46 +1,33 @@
 package com.kotato.multitimelineclient
 
-import android.Manifest
-import android.app.ActionBar
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
-import android.os.AsyncTask
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.Menu
 import android.view.View
-import com.google.gson.JsonObject
 import com.kotato.multitimelineclient.AccountManage.*
-import com.kotato.multitimelineclient.Media.MediaTabbedActivity
 import com.kotato.multitimelineclient.Push.ACTION_LOCAL_PUSH
 import com.kotato.multitimelineclient.Push.NotificationReceiver
 import com.kotato.multitimelineclient.Push.REQ_CODE
+import com.kotato.multitimelineclient.R.id.application
 import com.kotato.multitimelineclient.Service.TwitterService
 import com.kotato.multitimelineclient.TimeLine.TimeLineActivity
+import com.mopub.volley.toolbox.Volley
 import com.twitter.sdk.android.core.*
-import com.twitter.sdk.android.tweetui.UserTimeline
 import com.twitter.sdk.android.core.models.Tweet
 import kotlinx.coroutines.experimental.*
-import okhttp3.MediaType
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONException
-import org.json.JSONObject
-import java.io.File
-import java.io.IOException
 import java.util.concurrent.CountDownLatch
+
 
 
 class MainActivity : AppCompatActivity() {
@@ -66,7 +53,6 @@ class MainActivity : AppCompatActivity() {
         val accountList = readAccountList(filesDir)
         val targetAccount = accountList.find { (if(it.id == "") 0L else it.id?.toLong()) ==  TwitterCore.getInstance().sessionManager.activeSession.userId}
         var bitmap = BitmapFactory.decodeFile(filesDir.path + "/" + targetAccount?.id + "_" + targetAccount?.type + ".png",options)
-        print(targetAccount?.name)
         bitmap.density = 240
         val drawable = BitmapDrawable(resources,bitmap)
         println(drawable.minimumWidth)

@@ -1,165 +1,149 @@
 package com.kotato.multitimelineclient.Media
 
-import android.content.ContentUris
-import android.net.Uri
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
-
+import android.content.Context
+import android.os.Bundle
+import android.os.PersistableBundle
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.view.ViewPager
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.support.v7.app.AppCompatActivity
+import android.view.*
 import android.widget.ImageView
-import android.widget.RelativeLayout
-
-import android.widget.TextView
-
+import com.kotato.multitimelineclient.ImageLoadManger
+import com.kotato.multitimelineclient.ImageQue
 import com.kotato.multitimelineclient.R
-import com.kotato.multitimelineclient.TimeLine.IMAGE_CHACH_MAX_SIZE
-import com.kotato.multitimelineclient.TimeLine.MyImageCache
-import com.mopub.volley.toolbox.ImageLoader
-import java.io.ByteArrayInputStream
-import java.io.ObjectInputStream
+import com.mopub.volley.RequestQueue
+import com.mopub.volley.toolbox.Volley
+import java.util.ArrayList
 
+/**
+ * 画像の拡大用アクティビティ
+ */
 class MediaTabbedActivity : AppCompatActivity() {
 
-    val uris by lazy {
+    /**
+     * 画像のURLのリスト
+     */
+    val uris: ArrayList<String> by lazy {
         intent.getStringArrayListExtra("uris")
     }
 
-    val imageLoader by lazy {
-        var bais = ByteArrayInputStream(intent.getByteArrayExtra("imageLoaderByteArray"))
-        val ois = ObjectInputStream(bais)
-        ois.readObject() as? ImageLoader
+    /**
+     *
+     */
+    val queue: RequestQueue by lazy {
+        //今の所アクテビティごとにQueueを生成
+        Volley.newRequestQueue(this)
     }
 
-    /**
-     * The [android.support.v4.view.PagerAdapter] that will provide
-     * fragments for each of the sections. We use a
-     * [FragmentPagerAdapter] derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * [android.support.v4.app.FragmentStatePagerAdapter].
-     */
     private var mSectionsPagerAdapter: SectionsPagerAdapter? = null
 
-    /**
-     * The [ViewPager] that will host the section contents.
-     */
     private var mViewPager: ViewPager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_media_tabbed)
 
-
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
         mSectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
 
-        // Set up the ViewPager with the sections adapter.
         mViewPager = findViewById(R.id.container) as ViewPager
-        mViewPager!!.adapter = mSectionsPagerAdapter
+        mViewPager?.adapter = mSectionsPagerAdapter
 
     }
 
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_media_tabbed, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        val id = item.itemId
-
-
-        if (id == R.id.action_settings) {
-            return true
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
-
-
-    /**
-     * A [FragmentPagerAdapter] that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
     inner class SectionsPagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm) {
 
+
         override fun getItem(position: Int): Fragment {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1, uris[position], imageLoader)
+            return PlaceholderFragment.newInstance(position + 1, uris[position], queue)
         }
 
         override fun getCount(): Int {
-            // Show 3 total pages.
             return uris.size
         }
 
         override fun getPageTitle(position: Int): CharSequence? {
-            when (position) {
-                0 -> return "SECTION 1"
-                1 -> return "SECTION 2"
-                2 -> return "SECTION 3"
-            }
-            return null
+            return "Image No.$position"
         }
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    class PlaceholderFragment(val uri: String, val imageLoader: ImageLoader?) : Fragment() {
+    class PlaceholderFragment(val uri: String, val requestQueue: RequestQueue) : Fragment() {
+
 
 
         override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
                                   savedInstanceState: Bundle?): View? {
             val rootView = inflater!!.inflate(R.layout.fragment_media_tabbed, container, false)
             val imageView = rootView.findViewById<View>(R.id.imageView) as ImageView
+            ImageLoadManger.addImageQue(requestQueue, ImageQue(uri, imageView), android.R.color.transparent)
 
-            //cancel
-            val imageContainer = imageView.tag
-            if(imageContainer != null && imageContainer is ImageLoader.ImageContainer){
-                imageContainer.cancelRequest()
-            }
-            val imageListener = ImageLoader.getImageListener(imageView, R.color.tw__seekbar_thumb_outer_color, R.color.tw__seekbar_thumb_outer_color)
-            imageLoader?.get(uri, imageListener)
-            imageView.setImageURI(Uri.parse(uri))
+//            val detector: ScaleGestureDetector =
+//                ScaleGestureDetector(imageView.context, object : ScaleGestureDetector.OnScaleGestureListener{
+//
+//                    override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
+//                        println("onScaleBegin")
+//                        return true
+//                    }
+//
+//                    override fun onScaleEnd(detector: ScaleGestureDetector?) {
+//                        println("onScaleEnd")
+//                    }
+//
+//                    override fun onScale(detector: ScaleGestureDetector?): Boolean {
+//                        println("OnScale")
+//                        return true
+//                    }
+//                })
+//
+//            imageView.setOnTouchListener { view, motionEvent ->
+//                println("TouchEvent")
+//                detector.onTouchEvent(motionEvent)
+//                view.onTouchEvent(motionEvent)
+//            }
+
+
+
             return rootView
         }
 
         companion object {
-            /**
-             * The fragment argument representing the section number for this
-             * fragment.
-             */
             private val ARG_SECTION_NUMBER = "section_number"
-
-            /**
-             * Returns a new instance of this fragment for the given section
-             * number.
-             */
-            fun newInstance(sectionNumber: Int, uri: String, imageLoader: ImageLoader?): PlaceholderFragment {
-                val fragment = PlaceholderFragment(uri, imageLoader)
+            fun newInstance(sectionNumber: Int, uri: String, requestQueue: RequestQueue): PlaceholderFragment {
+                val fragment = PlaceholderFragment(uri, requestQueue)
                 val args = Bundle()
                 args.putInt(ARG_SECTION_NUMBER, sectionNumber)
                 fragment.arguments = args
                 return fragment
             }
         }
+    }
+}
+
+class MyImageView(context: Context) :ImageView(context){
+
+    val detector: ScaleGestureDetector =
+            ScaleGestureDetector(context, object : ScaleGestureDetector.OnScaleGestureListener{
+
+                override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
+                    println("onScaleBegin")
+                    return true
+                }
+
+                override fun onScaleEnd(detector: ScaleGestureDetector?) {
+                    println("onScaleEnd")
+                }
+
+                override fun onScale(detector: ScaleGestureDetector?): Boolean {
+                    println("OnScale")
+                    return true
+                }
+            })
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        println("TouchEvent")
+        detector.onTouchEvent(event)
+        return super.onTouchEvent(event)
     }
 }

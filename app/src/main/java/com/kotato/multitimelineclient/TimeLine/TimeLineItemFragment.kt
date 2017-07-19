@@ -22,7 +22,7 @@ import com.mopub.volley.toolbox.Volley
 class TimeLineItemFragment : ListFragment(){
 
     val adapter :TimeLineAdapter by lazy {
-        TimeLineAdapter(activity, Volley.newRequestQueue(activity), fragmentManager)
+        TimeLineAdapter(activity, Volley.newRequestQueue(activity))
     }
 
 

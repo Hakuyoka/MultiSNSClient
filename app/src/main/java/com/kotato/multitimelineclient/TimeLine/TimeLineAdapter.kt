@@ -1,36 +1,31 @@
 package com.kotato.multitimelineclient.TimeLine
 
-import android.app.Fragment
 import android.app.FragmentManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.text.Layout
+import android.util.AttributeSet
 import android.util.Log
 import android.util.LruCache
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
+import com.kotato.multitimelineclient.*
 import com.kotato.multitimelineclient.Media.MediaTabbedActivity
-import com.kotato.multitimelineclient.R
 import com.mopub.volley.RequestQueue
 import com.mopub.volley.toolbox.ImageLoader
-import java.io.ByteArrayOutputStream
-import java.io.ObjectOutput
-import java.io.ObjectOutputStream
-import java.sql.Time
+import android.view.Display
+import android.widget.GridLayout.LayoutParams
+
 
 /**
  * Created by kotato on 2017/07/06.
  */
-val IMAGE_CHACH_MAX_SIZE : Int = 10 * 1024 * 1024
-class TimeLineAdapter(context: Context,val queue: RequestQueue,val fragmentManager: FragmentManager) : ArrayAdapter<TimeLineItem>(context, 0) {
+class TimeLineAdapter(context: Context,val queue: RequestQueue) : ArrayAdapter<TimeLineItem>(context, 0) {
+    private val MAX_BITMAP_SIZE = 500
+
     val resource = R.layout.time_line_layout
-    val imageLoader : ImageLoader = ImageLoader(queue, MyImageCache(IMAGE_CHACH_MAX_SIZE))
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         var view : View
@@ -56,54 +51,49 @@ class TimeLineAdapter(context: Context,val queue: RequestQueue,val fragmentManag
 
 
 
-        val snnIcon = view.findViewById<View>(R.id.user_icon) as ImageView
-
-        //cancel
-        val imageContainer = snnIcon.tag
-
-        if(imageContainer != null && imageContainer is ImageLoader.ImageContainer){
-            imageContainer.cancelRequest();
-        }
-        //ユーザのアイコン
-        val imageListener = ImageLoader.getImageListener(snnIcon, R.drawable.twitter_logo_white_on_blue, R.drawable.twitter_logo_white_on_blue)
-        imageLoader.get(item.userIcon, imageListener)
+        val userIcon = view.findViewById<View>(R.id.user_icon) as ImageView
+        ImageLoadManger.addImageQue(queue, ImageQue(item.userIcon, userIcon, R.drawable.twitter_logo_white_on_blue))
 
         val layout = view.findViewById<View>(R.id.media_container) as LinearLayout
 
         //ListViewは使い回されるので、一度リセット
         layout.removeAllViews()
-        var count = 1
-        var uris = arrayListOf<String>()
-        if(item.mediaUrls != null && item.mediaUrls.size > 0){
-//            val baos = ByteArrayOutputStream()
-//            val oos = ObjectOutputStream(baos)
-//            oos.writeObject(imageListener)
-//            oos.close()
+        if(item.mediaUrls != null && item.mediaUrls.isNotEmpty()){
+            //画像の枚数に応じてグリッドレイアウトを変更
+            val gridLayout = GridLayout(context)
+            gridLayout.layoutParams = GridLayout.LayoutParams(GridLayout.spec(1), GridLayout.spec(1))
+            gridLayout.rowCount = if (item.mediaUrls.size > 2) 2 else 1
+            gridLayout.columnCount = if (item.mediaUrls.size > 1) 2 else 1
+            gridLayout.useDefaultMargins = true
+            layout.addView(gridLayout)
 
+            //画面幅から計算
+            val maxWidth: Int = parent?.width ?: 1
+            val viewWidth = maxWidth * 0.9 / gridLayout.columnCount
+            val maxHeight = parent?.height ?: 1
+            val viewHeight = maxHeight * 0.9 / gridLayout.columnCount
+            //画像拡大Viewに渡すURIの配列
+            var uris = arrayListOf<String>()
             uris.addAll(item.mediaUrls?.toList())
+
             item.mediaUrls?.map {
                 it ->
-                Log.d("has Media" + count++, it)
-
                 val imageView = ImageView(context)
-//                imageView.setOnClickListener {
-//                    view ->
-//                    val intent = Intent(context, MediaTabbedActivity::class.java)
-//                    intent.putExtra("uris",uris)
-//                    intent.putExtra("imageLoaderByteArray",baos.toByteArray())
-//                    context.startActivity(intent)
-//                }
                 imageView.adjustViewBounds = true
-                imageView.maxHeight = 500
-                layout.addView(imageView)
+                imageView.maxWidth = viewWidth.toInt()
+                imageView.maxHeight = viewHeight.toInt()
+                imageView.scaleType = ImageView.ScaleType.FIT_XY
 
-                //cancel
-                val imageContainer = imageView.tag
-                if(imageContainer != null && imageContainer is ImageLoader.ImageContainer){
-                    imageContainer.cancelRequest()
+//                layout.addView(imageView)
+                gridLayout.addView(imageView)
+                imageView.setOnClickListener {
+                    view ->
+                        val intent = Intent(context, MediaTabbedActivity::class.java)
+                        intent.putExtra("uris",uris)
+                        context.startActivity(intent)
                 }
-                val imageListener = ImageLoader.getImageListener(imageView, R.color.tw__seekbar_thumb_outer_color, R.color.tw__seekbar_thumb_outer_color)
-                imageLoader.get(it, imageListener)
+
+                ImageLoadManger.addImageQue(queue, ImageQue(it, imageView), MAX_BITMAP_SIZE, MAX_BITMAP_SIZE)
             }
         }
 
@@ -138,21 +128,3 @@ class TimeLineAdapter(context: Context,val queue: RequestQueue,val fragmentManag
 
 }
 
-
-class MyImageCache(maxSize: Int) : ImageLoader.ImageCache{
-    val memoryCache: LruCache<String, Bitmap> = object : LruCache<String, Bitmap>(maxSize) {
-        override fun sizeOf(key: String, value: Bitmap): Int {
-            return value.rowBytes * value.height
-        }
-    }
-
-    override fun getBitmap(url: String?): Bitmap? {
-        Log.d("getBitmap", url)
-        return memoryCache.get(url)
-    }
-
-    override fun putBitmap(url: String?, bitmap: Bitmap?) {
-        Log.d("putBitmap", url)
-        memoryCache.put(url, bitmap)
-    }
-}
