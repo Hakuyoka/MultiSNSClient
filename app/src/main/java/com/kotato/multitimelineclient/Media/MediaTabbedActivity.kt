@@ -10,6 +10,7 @@ import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.view.*
 import android.widget.ImageView
+import com.github.chrisbanes.photoview.PhotoView
 import com.kotato.multitimelineclient.ImageLoadManger
 import com.kotato.multitimelineclient.ImageQue
 import com.kotato.multitimelineclient.R
@@ -46,7 +47,6 @@ class MediaTabbedActivity : AppCompatActivity() {
         setContentView(R.layout.activity_media_tabbed)
 
         mSectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
-
         mViewPager = findViewById(R.id.container) as ViewPager
         mViewPager?.adapter = mSectionsPagerAdapter
 
@@ -71,40 +71,10 @@ class MediaTabbedActivity : AppCompatActivity() {
 
     class PlaceholderFragment(val uri: String, val requestQueue: RequestQueue) : Fragment() {
 
-
-
-        override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
-                                  savedInstanceState: Bundle?): View? {
+        override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
             val rootView = inflater!!.inflate(R.layout.fragment_media_tabbed, container, false)
-            val imageView = rootView.findViewById<View>(R.id.imageView) as ImageView
+            val imageView = rootView.findViewById<View>(R.id.photo_view) as PhotoView
             ImageLoadManger.addImageQue(requestQueue, ImageQue(uri, imageView), android.R.color.transparent)
-
-//            val detector: ScaleGestureDetector =
-//                ScaleGestureDetector(imageView.context, object : ScaleGestureDetector.OnScaleGestureListener{
-//
-//                    override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
-//                        println("onScaleBegin")
-//                        return true
-//                    }
-//
-//                    override fun onScaleEnd(detector: ScaleGestureDetector?) {
-//                        println("onScaleEnd")
-//                    }
-//
-//                    override fun onScale(detector: ScaleGestureDetector?): Boolean {
-//                        println("OnScale")
-//                        return true
-//                    }
-//                })
-//
-//            imageView.setOnTouchListener { view, motionEvent ->
-//                println("TouchEvent")
-//                detector.onTouchEvent(motionEvent)
-//                view.onTouchEvent(motionEvent)
-//            }
-
-
-
             return rootView
         }
 
@@ -118,32 +88,5 @@ class MediaTabbedActivity : AppCompatActivity() {
                 return fragment
             }
         }
-    }
-}
-
-class MyImageView(context: Context) :ImageView(context){
-
-    val detector: ScaleGestureDetector =
-            ScaleGestureDetector(context, object : ScaleGestureDetector.OnScaleGestureListener{
-
-                override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
-                    println("onScaleBegin")
-                    return true
-                }
-
-                override fun onScaleEnd(detector: ScaleGestureDetector?) {
-                    println("onScaleEnd")
-                }
-
-                override fun onScale(detector: ScaleGestureDetector?): Boolean {
-                    println("OnScale")
-                    return true
-                }
-            })
-
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        println("TouchEvent")
-        detector.onTouchEvent(event)
-        return super.onTouchEvent(event)
     }
 }

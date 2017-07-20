@@ -1,4 +1,4 @@
-package com.kotato.multitimelineclient.Service
+package com.kotato.multitimelineclient.SNSService
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -28,42 +28,41 @@ import java.util.concurrent.CountDownLatch
  * Created by kotato on 2017/07/11.
  */
 
-object TwitterService: SNNService{
+object TwitterService : SNNService {
+
+    private var newestTimeLineIdHolder: MutableList<TwitterIdHolder> = mutableListOf()
 
     val gson = Gson()
     /***
      * ログインユーザのホームタイムラインを取得
      * @param callback
      */
-    override fun getTimeLine(callback : (List<TimeLineItem>) -> Unit) = async(CommonPool){
+    override fun getTimeLine() = async(CommonPool) {
         var timeLineItems: List<TimeLineItem> = listOf()
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
-        if(activeSession != null){
+        if (activeSession != null) {
             val appClient = TwitterApiClient(activeSession)
-            val call = appClient.statusesService.homeTimeline(null,null,null, false, null, null, null)
-            var latch = CountDownLatch(1)
+            val newestId = newestTimeLineIdHolder.find { activeSession.userId == it.userId }?.timeLineId
+            val call = appClient.statusesService.homeTimeline(null, newestId, null, false, null, null, null)
 
-            call?.enqueue(object : Callback<List<Tweet>>() {
-                override fun success(result: Result<List<Tweet>>) {
-                    Log.d("Get Timeline Success", result.data.toString())
-                    timeLineItems = result.data.map {
+            try {
+                val result = call?.execute()
+                //エラーだとボディがからになる？
+                if(result?.body() != null){
+
+                    timeLineItems = result.body().map {
                         it ->
                         TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
                                 it.extendedEntities?.media?.filter { it -> it.type == "photo" }?.map { it -> it.mediaUrlHttps })
                     }
-                    callback.invoke(timeLineItems)
-                    latch.countDown()
+                    //最新IDの更新
+                    val target = newestTimeLineIdHolder.find { activeSession.userId == it.userId } ?: TwitterIdHolder(activeSession.userId).apply {
+                        newestTimeLineIdHolder.add(this)
+                    }
+
+                    target.timeLineId = timeLineItems.maxBy { it.id }?.id ?:target.timeLineId
                 }
-
-                override fun failure(exception: TwitterException) {
-                    Log.e("Get Timeline Failur", exception.toString())
-
-                }
-            })
-
-            try {
-                latch.await()
-            }catch (e:InterruptedException){
+            }catch (e: IOException){
                 e.printStackTrace()
             }
 
@@ -76,12 +75,12 @@ object TwitterService: SNNService{
      * @param callback
      *
      */
-    fun getMentions(callback : (List<TimeLineItem>) -> Unit) = async(CommonPool){
+    fun getMentions(callback: (List<TimeLineItem>) -> Unit) = async(CommonPool) {
         var timeLineItems: List<TimeLineItem> = listOf()
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
-        if(activeSession != null){
+        if (activeSession != null) {
             val appClient = TwitterApiClient(activeSession)
-            val call = appClient.statusesService.mentionsTimeline(null,null,null,null,null,null)
+            val call = appClient.statusesService.mentionsTimeline(null, null, null, null, null, null)
 
             var latch = CountDownLatch(1)
             call?.enqueue(object : Callback<List<Tweet>>() {
@@ -99,6 +98,7 @@ object TwitterService: SNNService{
 
                 override fun failure(exception: TwitterException) {
                     Log.e("Get Timeline Failur", exception.toString())
+                    latch.countDown()
 
                 }
             })
@@ -106,7 +106,7 @@ object TwitterService: SNNService{
 
             try {
                 latch.await()
-            }catch (e:InterruptedException){
+            } catch (e: InterruptedException) {
                 e.printStackTrace()
             }
         }
@@ -117,10 +117,10 @@ object TwitterService: SNNService{
      * ログインユーザのファボリストを取得
      * @param callback
      */
-    fun getFavoriteList(callback : (List<TimeLineItem>) -> Unit) = async(CommonPool){
+    fun getFavoriteList(callback: (List<TimeLineItem>) -> Unit) = async(CommonPool) {
         var timeLineItems: List<TimeLineItem> = listOf()
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
-        if(activeSession != null){
+        if (activeSession != null) {
             val appClient = TwitterApiClient(activeSession)
             val call = appClient.favoriteService.list(null, null, null, null, null, null)
 
@@ -140,13 +140,17 @@ object TwitterService: SNNService{
 
                 override fun failure(exception: TwitterException) {
                     Log.e("Get Timeline Failur", exception.toString())
+                    latch.countDown()
+
                 }
+
+
             })
 
 
             try {
                 latch.await()
-            }catch (e:InterruptedException){
+            } catch (e: InterruptedException) {
                 e.printStackTrace()
             }
         }
@@ -156,7 +160,7 @@ object TwitterService: SNNService{
     /**
      * HTTPを通して画像の取得
      */
-    override fun getImage(urlStr: String, callback:(Bitmap?) -> Unit) = async(CommonPool) {
+    override fun getImage(urlStr: String, callback: (Bitmap?) -> Unit) = async(CommonPool) {
         println("start getImage")
         var bitmap: Bitmap? = null
         try {
@@ -177,10 +181,10 @@ object TwitterService: SNNService{
     /**
      * 認証されているユーザ情報を取得する
      */
-    override fun getUserInfo(callback:(Account?) -> Unit) = async(CommonPool){
+    override fun getUserInfo(callback: (Account?) -> Unit) = async(CommonPool) {
         var account: Account? = null
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
-        if(activeSession != null) {
+        if (activeSession != null) {
             val twitterApiClient = TwitterApiClient(activeSession)
             val statusesService = twitterApiClient.accountService
             val call = statusesService?.verifyCredentials(false, false, false)
@@ -190,17 +194,18 @@ object TwitterService: SNNService{
                 override fun success(result: Result<User>) {
                     Log.i("Users", result.data.profileImageUrl)
                     val user = result.data
-                    account = Account(user.id.toString(),user.name,user.email,0,null,null,true,user.profileImageUrlHttps, gson.toJson(activeSession))
+                    account = Account(user.id.toString(), user.name, user.email, 0, null, null, true, user.profileImageUrlHttps, gson.toJson(activeSession))
                     callback(account)
                     latch.countDown()
                 }
-                override fun failure(exception: TwitterException) {
 
+                override fun failure(exception: TwitterException) {
+                    latch.countDown()
                 }
             })
             try {
                 latch.await()
-            }catch (e:InterruptedException){
+            } catch (e: InterruptedException) {
                 e.printStackTrace()
             }
         }
@@ -208,11 +213,11 @@ object TwitterService: SNNService{
         return@async account
     }
 
-    override fun authlize(loginButton: View, callback: (Any) -> Unit) = async(CommonPool){
-        if(loginButton is TwitterLoginButton){
+    override fun authlize(loginButton: View, callback: (Any) -> Unit) = async(CommonPool) {
+        if (loginButton is TwitterLoginButton) {
             loginButton.callback = object : Callback<TwitterSession>() {
-                override fun success(result: Result<TwitterSession>){
-                    TwitterCore.getInstance().sessionManager.activeSession =  result.data
+                override fun success(result: Result<TwitterSession>) {
+                    TwitterCore.getInstance().sessionManager.activeSession = result.data
                 }
 
                 override fun failure(exception: TwitterException) {
@@ -241,13 +246,14 @@ object TwitterService: SNNService{
                     mediaStr = result.data.mediaIdString
                     latch.countDown()
                 }
+
                 override fun failure(exception: TwitterException) {
                     latch.countDown()
                 }
             })
             try {
                 latch.await()
-            }catch (e:InterruptedException){
+            } catch (e: InterruptedException) {
                 e.printStackTrace()
             }
         }
@@ -255,4 +261,10 @@ object TwitterService: SNNService{
         return@async mediaStr
     }
 
+    data class TwitterIdHolder(val userId:Long, var timeLineId:Long? = null, var mentionId:Long? = null, var favoriteId:Long? = null){
+        override fun equals(other: Any?): Boolean {
+            val holder = other as? TwitterIdHolder
+            return holder?.userId == userId
+        }
+    }
 }

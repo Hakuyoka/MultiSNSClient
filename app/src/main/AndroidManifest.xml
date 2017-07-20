@@ -31,11 +31,16 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".Input.InputActivity" />
 
+
         <receiver android:name=".Push.NotificationReceiver">
             <intent-filter>
                 <action android:name="com.kotato.localpush" />
             </intent-filter>
         </receiver>
+
+        <service android:name=".Push.PushService">
+
+        </service>
 
         <activity
             android:name=".Media.MediaTabbedActivity"

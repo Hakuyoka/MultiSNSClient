@@ -2,7 +2,6 @@ package com.kotato.multitimelineclient.Input
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
@@ -14,9 +13,8 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 
 import com.kotato.multitimelineclient.R
-import com.kotato.multitimelineclient.Service.TwitterService
+import com.kotato.multitimelineclient.SNSService.TwitterService
 import com.kotato.multitimelineclient.getPathFromUri
-import com.mopub.volley.toolbox.ImageLoader
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.models.Tweet
 import kotlinx.coroutines.experimental.CommonPool

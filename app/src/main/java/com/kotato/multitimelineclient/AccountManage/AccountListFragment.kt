@@ -11,7 +11,7 @@ import android.widget.*
 import com.google.gson.Gson
 
 import com.kotato.multitimelineclient.R
-import com.kotato.multitimelineclient.Service.TwitterService
+import com.kotato.multitimelineclient.SNSService.TwitterService
 import com.kotato.multitimelineclient.TimeLine.TimeLineActivity
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.identity.TwitterAuthClient

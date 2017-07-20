@@ -1,23 +1,19 @@
 package com.kotato.multitimelineclient.TimeLine
 
 import android.app.ListFragment
-import android.content.Context
-import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.support.v4.app.Fragment
 import android.support.v4.widget.SwipeRefreshLayout
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import com.kotato.multitimelineclient.AccountManage.AccountListAdapter
 
 import com.kotato.multitimelineclient.R
-import com.kotato.multitimelineclient.Service.TwitterService
-import com.mopub.volley.RequestQueue
+import com.kotato.multitimelineclient.SNSService.TwitterService
 import com.mopub.volley.toolbox.Volley
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.async
 
 class TimeLineItemFragment : ListFragment(){
 
@@ -36,14 +32,13 @@ class TimeLineItemFragment : ListFragment(){
         val swipeContainer = view?.findViewById<View>(R.id.swipe_container) as SwipeRefreshLayout
         swipeContainer.setOnRefreshListener({
             Log.d("Refresh Start",view.id.toString())
-            TwitterService.getTimeLine {
-                if(it != null){
-                    val insertTimeLine = margeTimeLine(it)
-                    swipeContainer.isRefreshing = false
-                    insertTimeLine.forEach {
-                        adapter.insert(it,0)
-                    }
+            async(UI){
+                val timeLine = TwitterService.getTimeLine()
+                val insertTimeLine = margeTimeLine(timeLine.await())
+                insertTimeLine.forEach {
+                    adapter.insert(it,0)
                 }
+                swipeContainer.isRefreshing = false
             }
         })
         return view

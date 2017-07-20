@@ -19,7 +19,7 @@ class AccountsMangeActivity : AppCompatActivity() {
     val accountList
         get() = readAccountList(filesDir)
 
-    val listFragment : AccountListFragment by lazy {
+    val listFragment: AccountListFragment by lazy {
         AccountListFragment(accountList)
     }
 
@@ -51,14 +51,14 @@ class AccountsMangeActivity : AppCompatActivity() {
 
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.navigation,menu)
+        menuInflater.inflate(R.menu.navigation, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
-        Log.d("finish account"," a a a a ")
+        Log.d("finish account", " a a a a ")
         if (resultCode != Activity.RESULT_OK || intent == null) {
             return
         }
@@ -66,12 +66,14 @@ class AccountsMangeActivity : AppCompatActivity() {
         val account = intent.getSerializableExtra("Account") as Account?
         val fragment = fragmentManager.findFragmentByTag("fragment_main") as? AccountListFragment
 
-        if(account != null &&accountList.contains(account)) {
-            fragment?.replaceItem(account, accountList.indexOf(account))
-            accountList.map { if(it==account) account else it }.save(filesDir)
-        } else if(account != null && !accountList.contains(account)){
-            fragment?.addItem(account)
-            accountList.plus(account).save(filesDir)
+        account?.let {
+            if (accountList.contains(account)) {
+                fragment?.replaceItem(account, accountList.indexOf(account))
+                accountList.map { if (it == account) account else it }.save(filesDir)
+            } else {
+                fragment?.addItem(account)
+                accountList.plus(account).save(filesDir)
+            }
         }
 
     }

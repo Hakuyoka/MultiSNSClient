@@ -17,11 +17,10 @@ import android.view.View
 import com.kotato.multitimelineclient.AccountManage.*
 import com.kotato.multitimelineclient.Push.ACTION_LOCAL_PUSH
 import com.kotato.multitimelineclient.Push.NotificationReceiver
+import com.kotato.multitimelineclient.Push.PushService
 import com.kotato.multitimelineclient.Push.REQ_CODE
-import com.kotato.multitimelineclient.R.id.application
-import com.kotato.multitimelineclient.Service.TwitterService
+import com.kotato.multitimelineclient.SNSService.TwitterService
 import com.kotato.multitimelineclient.TimeLine.TimeLineActivity
-import com.mopub.volley.toolbox.Volley
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.models.Tweet
 import kotlinx.coroutines.experimental.*
@@ -56,9 +55,21 @@ class MainActivity : AppCompatActivity() {
         bitmap.density = 240
         val drawable = BitmapDrawable(resources,bitmap)
         println(drawable.minimumWidth)
-        toolbar.setNavigationIcon(drawable)
+        toolbar.navigationIcon = drawable
         setSupportActionBar(toolbar)
 
+
+        startService()
+    }
+
+    fun startService(){
+        val intent = Intent(this, PushService::class.java)
+        startService(intent)
+    }
+
+    fun stopService(){
+        val intent = Intent(this, PushService::class.java)
+        stopService(intent)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -69,7 +80,6 @@ class MainActivity : AppCompatActivity() {
     fun goAccountMange(view: View){
         val intent =  Intent(this, AccountsMangeActivity::class.java)
         startActivity(intent)
-
     }
 
     fun sendRequest(view: View){
@@ -128,6 +138,7 @@ class MainActivity : AppCompatActivity() {
 //        intent.putExtra("uris", arrayListOf("1","2","3","3"))
 //        startActivity(intent)
 
+        stopService()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

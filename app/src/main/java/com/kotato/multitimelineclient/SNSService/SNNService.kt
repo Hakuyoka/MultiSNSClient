@@ -1,4 +1,4 @@
-package com.kotato.multitimelineclient.Service
+package com.kotato.multitimelineclient.SNSService
 
 import android.graphics.Bitmap
 import android.view.View
@@ -11,7 +11,7 @@ import kotlinx.coroutines.experimental.Deferred
  */
 
 interface SNNService{
-    fun getTimeLine(callback : (List<TimeLineItem>) -> Unit) : Deferred<List<TimeLineItem>>
+    fun getTimeLine() : Deferred<List<TimeLineItem>>
     fun getImage(urlStr: String, callback:(Bitmap?) -> Unit) : Deferred<Bitmap?>
     fun getUserInfo(callback:(Account?) -> Unit): Deferred<Account?>
     fun authlize(view: View, callback: (Any) -> Unit): Deferred<Any?>

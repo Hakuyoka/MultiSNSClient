@@ -3,9 +3,9 @@ package com.kotato.multitimelineclient.TimeLine
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.TabItem
 import android.support.design.widget.TabLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
@@ -16,15 +16,16 @@ import com.kotato.multitimelineclient.AccountManage.readAccountList
 import com.kotato.multitimelineclient.Input.InputActivity
 
 import com.kotato.multitimelineclient.R
-import com.kotato.multitimelineclient.Service.TwitterService
+import com.kotato.multitimelineclient.SNSService.TwitterService
 import com.twitter.sdk.android.core.TwitterCore
-import com.twitter.sdk.android.core.models.TwitterCollection
 import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
 
 class TimeLineActivity : AppCompatActivity() {
     val SUBMIT_CODE = 100
     var listFragment : TimeLineItemFragment = TimeLineItemFragment()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,13 +60,10 @@ class TimeLineActivity : AppCompatActivity() {
                 .add(R.id.time_line_fragment_container, listFragment, "time_line_fragment_main")
                 .commit()
 
-        TwitterService.getTimeLine {
-            Log.d("Timeline get", Gson().toJson(it?.get(0)).toString())
-            if (it != null) {
-                listFragment.addAll(it)
-            }
+        async(UI){
+            val timeLine = TwitterService.getTimeLine()
+            listFragment.addAll(timeLine.await())
         }
-
     }
 
 
