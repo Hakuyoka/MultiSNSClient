@@ -80,6 +80,7 @@ class TabListener(val timeLineItemFragment: TimeLineItemFragment): TabLayout.OnT
             }
 
 
+
             if (timeLineItem != null && timeLineList != null){
                 async(UI){
                     if(currentTab != tab.position)
