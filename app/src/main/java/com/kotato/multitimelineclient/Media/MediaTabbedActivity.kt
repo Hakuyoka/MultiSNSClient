@@ -1,22 +1,21 @@
 package com.kotato.multitimelineclient.Media
 
-import android.content.Context
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
-import android.view.*
-import android.widget.ImageView
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.github.chrisbanes.photoview.PhotoView
-import com.kotato.multitimelineclient.ImageLoadManger
-import com.kotato.multitimelineclient.ImageQue
 import com.kotato.multitimelineclient.R
 import com.mopub.volley.RequestQueue
 import com.mopub.volley.toolbox.Volley
-import java.util.ArrayList
+import java.util.*
 
 /**
  * 画像の拡大用アクティビティ
@@ -74,7 +73,11 @@ class MediaTabbedActivity : AppCompatActivity() {
         override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
             val rootView = inflater!!.inflate(R.layout.fragment_media_tabbed, container, false)
             val imageView = rootView.findViewById<View>(R.id.photo_view) as PhotoView
-            ImageLoadManger.addImageQue(requestQueue, ImageQue(uri, imageView), android.R.color.transparent)
+//            ImageLoadManger.addImageQue(requestQueue, ImageQue(uri, imageView), android.R.color.transparent)
+            Glide.with(context)
+                    .load(uri)
+                    .apply(RequestOptions().fitCenter())
+                    .into(imageView)
             return rootView
         }
 

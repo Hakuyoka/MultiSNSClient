@@ -1,19 +1,18 @@
 package com.kotato.multitimelineclient.Push
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
-import android.graphics.Bitmap
 import android.os.IBinder
+import android.support.v4.content.LocalBroadcastManager
 import android.support.v7.app.NotificationCompat
 import android.util.Log
 import com.kotato.multitimelineclient.MainActivity
 import com.kotato.multitimelineclient.R
-import android.app.AlarmManager
 import com.kotato.multitimelineclient.SNSService.TwitterService
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
@@ -30,24 +29,23 @@ val ACTION_LOCAL_PUSH = "com.kotato.localpush"
 
 class PushService: Service(){
 
-    val timer: Timer =
-        timer("check timeline",initialDelay = 1000 * 60 * 15, period = 1000 * 60 * 15){
+    var timer: Timer = timer("check timeline",initialDelay = 1000 * 60 , period = 1000 * 60){
+        val intent = Intent(this@PushService, NotificationReceiver::class.java)
+        val sender = PendingIntent.getBroadcast(this@PushService, REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
-            async(CommonPool){
-                val timeLine = TwitterService.getTimeLine()
-                val intent = Intent(this@PushService, NotificationReceiver::class.java)
-                intent.action = ACTION_LOCAL_PUSH
-                intent.putExtra("count", timeLine.await().size)
-                val sender = PendingIntent.getBroadcast(this@PushService, REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-                sender.send()
-
-            }
-
+        async(CommonPool){
+            val timeLine = TwitterService.getMentions {  }
+            intent.putExtra("count", timeLine.await().size)
+            sender.send()
         }
+    }
+
 
 
     override fun onCreate() {
         Log.d("Push Service", "On Create")
+        val context = applicationContext
+
         super.onCreate()
     }
 
@@ -80,9 +78,9 @@ class NotificationReceiver : BroadcastReceiver() {
         builder.setSmallIcon(R.drawable.tw__ic_logo_white)//ないと通知が届かない
         builder.setLargeIcon(largeIcon)
         builder.setTicker("ticker")
-        builder.setContentTitle("タイトル")
+        builder.setContentTitle("通知が来ました！")
         val count = intent.getIntExtra("count", 0)
-        builder.setContentText("本文 $count")
+        builder.setContentText(" $count 件の通知がきました！")
         val contentIntent = PendingIntent.getActivity(context, REQ_CODE, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT)
         builder.setContentIntent(contentIntent)
         // タップで通知領域から削除する

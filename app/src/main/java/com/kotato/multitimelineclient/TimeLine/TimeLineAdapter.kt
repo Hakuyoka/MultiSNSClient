@@ -15,12 +15,19 @@ import com.kotato.multitimelineclient.Media.MediaTabbedActivity
 import com.mopub.volley.RequestQueue
 import com.mopub.volley.toolbox.ImageLoader
 import android.widget.GridLayout.LayoutParams
+import com.bumptech.glide.Glide
+import com.bumptech.glide.annotation.GlideModule
+import com.bumptech.glide.load.engine.executor.GlideExecutor
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.request.RequestOptions
 import org.xmlpull.v1.XmlPullParser
 
 
 /**
  * Created by kotato on 2017/07/06.
  */
+
+
 class TimeLineAdapter(context: Context, val queue: RequestQueue) : ArrayAdapter<TimeLineItem>(context, 0) {
     private val MAX_BITMAP_SIZE = 500
 
@@ -48,7 +55,11 @@ class TimeLineAdapter(context: Context, val queue: RequestQueue) : ArrayAdapter<
         text.text = item.text
 
         val userIcon = view.findViewById<View>(R.id.user_icon) as ImageView
-        ImageLoadManger.addImageQue(queue, ImageQue(item.userIcon, userIcon, R.drawable.twitter_logo_white_on_blue))
+//        ImageLoadManger.addImageQue(queue, ImageQue(item.userIcon, userIcon, R.drawable.twitter_logo_white_on_blue))
+        Glide.with(context)
+                .load(item.userIcon)
+                .apply(RequestOptions().fitCenter().placeholder(R.drawable.twitter_logo_white_on_blue))
+                .into(userIcon)
 
         val layout = view.findViewById<View>(R.id.media_container) as LinearLayout
         //ListViewは使い回されるので、一度リセット
@@ -91,7 +102,10 @@ class TimeLineAdapter(context: Context, val queue: RequestQueue) : ArrayAdapter<
                     }
                 }
                 gridLayout.addView(imageView)
-                ImageLoadManger.addImageQue(queue, ImageQue(uri, imageView), MAX_BITMAP_SIZE, MAX_BITMAP_SIZE)
+                Glide.with(context)
+                        .load(uri)
+                        .apply(RequestOptions().override(MAX_BITMAP_SIZE).fitCenter())
+                        .into(imageView)
             }
         }
 
@@ -99,8 +113,8 @@ class TimeLineAdapter(context: Context, val queue: RequestQueue) : ArrayAdapter<
     }
 
 
-    fun add(id: Long, userId: Long, userName: String, text: String, userIcon: String) {
-        val item = TimeLineItem(id, userId, userName, text, userIcon)
+    fun add(id: Long, userId: Long, userName: String, text: String, userIcon: String, type: Int) {
+        val item = TimeLineItem(id, userId, userName, text, userIcon, type = type)
         super.add(item)
     }
 

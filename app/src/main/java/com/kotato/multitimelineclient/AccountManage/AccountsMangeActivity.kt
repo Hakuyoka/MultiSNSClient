@@ -17,7 +17,7 @@ import android.view.Menu
 class AccountsMangeActivity : AppCompatActivity() {
 
     val accountList
-        get() = readAccountList(filesDir)
+        get() = getAccountList()
 
     val listFragment: AccountListFragment by lazy {
         AccountListFragment(accountList)
@@ -69,10 +69,9 @@ class AccountsMangeActivity : AppCompatActivity() {
         account?.let {
             if (accountList.contains(account)) {
                 fragment?.replaceItem(account, accountList.indexOf(account))
-                accountList.map { if (it == account) account else it }.save(filesDir)
             } else {
                 fragment?.addItem(account)
-                accountList.plus(account).save(filesDir)
+                account.save()
             }
         }
 

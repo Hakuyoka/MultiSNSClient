@@ -2,6 +2,7 @@ package com.kotato.multitimelineclient.TimeLine
 
 import android.app.ListFragment
 import android.os.Bundle
+import android.support.v4.view.ViewCompat
 import android.support.v4.widget.SwipeRefreshLayout
 import android.util.Log
 import android.view.LayoutInflater
@@ -30,10 +31,16 @@ class TimeLineItemFragment : ListFragment(){
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater?.inflate(R.layout.fragment_time_line_item, container, false)
         val swipeContainer = view?.findViewById<View>(R.id.swipe_container) as SwipeRefreshLayout
+        ViewCompat.setNestedScrollingEnabled(swipeContainer.findViewWithTag<View>("timeline_list"), true)
         swipeContainer.setOnRefreshListener({
             Log.d("Refresh Start",view.id.toString())
+
+            val maxId = (0 .. adapter.count - 1)
+                    .map { adapter.getItem(it).id }
+                    .max()
+
             async(UI){
-                val timeLine = TwitterService.getTimeLine()
+                val timeLine = TwitterService.getTimeLine(maxId)
                 val insertTimeLine = margeTimeLine(timeLine.await())
                 insertTimeLine.forEach {
                     adapter.insert(it,0)

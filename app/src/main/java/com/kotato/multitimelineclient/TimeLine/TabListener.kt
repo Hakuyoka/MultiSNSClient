@@ -3,6 +3,7 @@ package com.kotato.multitimelineclient.TimeLine
 import android.support.design.widget.TabLayout
 import android.util.Log
 import com.kotato.multitimelineclient.SNSService.TwitterService
+import com.twitter.sdk.android.core.TwitterCore
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
@@ -14,7 +15,7 @@ import kotlinx.coroutines.experimental.launch
 
 class TabListener(val timeLineItemFragment: TimeLineItemFragment): TabLayout.OnTabSelectedListener{
     val timeLineMap = mutableMapOf<Int, List<TimeLineItem>>()
-    var currentTab = 0
+    var maxId : Long? = null
     /**
      * Called when a tab enters the selected state.
 
@@ -23,27 +24,26 @@ class TabListener(val timeLineItemFragment: TimeLineItemFragment): TabLayout.OnT
     override fun onTabSelected(tab: TabLayout.Tab?) {
         Log.d("Tab","First Selected "+ tab?.position)
         if(tab != null) launch(CommonPool){
-            Log.d("Tab","Start get time line type:"+ tab.position)
+            val timeLineList = timeLineMap[tab.position] ?: mutableListOf()
+
+            val savedList = getTimeList(TwitterCore.getInstance().sessionManager.activeSession.userId, tab.position)
+
+            maxId = savedList.maxBy{ it.id }?.id
             val timeLineItem = when (tab.position){
-                0 -> TwitterService.getTimeLine().await()
-                1 -> TwitterService.getMentions{}.await()
+                0 -> TwitterService.getTimeLine(maxId).await()
+                1 -> TwitterService.getMentions {  }.await()
                 2 -> TwitterService.getFavoriteList {  }.await()
-                else -> arrayListOf()
+                else -> mutableListOf()
             }
-            Log.d("Tab","End get time line type:"+ timeLineItem)
+            Log.d("Tab","First Get TimeLine "+ timeLineItem.size)
 
-            if (timeLineItem != null){
-                async(UI){
-                    if(currentTab != tab.position)
-                        timeLineItemFragment.removeAll()
-
-                    timeLineMap.put(tab.position, timeLineItem)
-                    timeLineItemFragment.addAll(timeLineItem)
-                    currentTab = tab.position
-                }
+            val margedList = timeLineList.plus(savedList).plus(timeLineItem).distinct()
+            launch(UI){
+                timeLineItemFragment.removeAll()
+                timeLineItemFragment.addAll(margedList.sortedBy { it.id }.reversed())
             }
+
         }
-
     }
 
     /**
@@ -55,8 +55,7 @@ class TabListener(val timeLineItemFragment: TimeLineItemFragment): TabLayout.OnT
         Log.d("Tab","Unselected "+ tab?.position)
         launch(CommonPool){
             if(tab != null){
-                val timeLineList = timeLineMap.get(tab.position)
-                timeLineMap.set(tab.position, timeLineItemFragment.getAll())
+                timeLineMap[tab.position] = timeLineItemFragment.getAll()
             }
         }
     }
@@ -70,28 +69,20 @@ class TabListener(val timeLineItemFragment: TimeLineItemFragment): TabLayout.OnT
     override fun onTabReselected(tab: TabLayout.Tab?) {
         Log.d("Tab","Reselected "+ tab?.position)
         if(tab != null) launch(CommonPool){
-            val timeLineList = timeLineMap.get(tab.position)
 
             val timeLineItem = when (tab.position){
-                0 -> TwitterService.getTimeLine().await()
+                0 -> TwitterService.getTimeLine(maxId).await()
                 1 -> TwitterService.getMentions {  }.await()
                 2 -> TwitterService.getFavoriteList {  }.await()
                 else -> mutableListOf()
             }
 
 
-
-            if (timeLineItem != null && timeLineList != null){
-                async(UI){
-                    if(currentTab != tab.position)
-                        timeLineItemFragment.removeAll()
-
+            if (timeLineItem.isNotEmpty()){
+                launch(UI){
                     var marged = timeLineItemFragment.margeTimeLine(timeLineItem)
-                    timeLineItemFragment.addAll(timeLineList.plus(marged))
-                    timeLineMap.put(tab.position, timeLineList.plus(marged))
-                    currentTab = tab?.position
+                    timeLineItemFragment.addAll(marged)
                 }
-
             }
 
         }

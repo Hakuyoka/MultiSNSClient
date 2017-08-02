@@ -1,30 +1,30 @@
 package com.kotato.multitimelineclient
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import android.util.LruCache
 import android.widget.ImageView
 import com.mopub.volley.RequestQueue
 import com.mopub.volley.toolbox.ImageLoader
-import com.mopub.volley.toolbox.Volley
 
 /**
+ *
+ * 作ったけどGlideのがいい感じなので乗り換えようと思う
  * Created by kotato on 2017/07/19.
  */
 
 //状態持っちゃってる
-object ImageLoadManger{
+object ImageLoadManger {
 
     val IMAGE_CACHE_MAX_SIZE: Int = 10 * 1024 * 1024
     private val cache = MyImageCache(IMAGE_CACHE_MAX_SIZE)
-    private val loaderMap = mutableMapOf<RequestQueue,ImageLoader>()
+    private val loaderMap = mutableMapOf<RequestQueue, ImageLoader>()
 
-    fun addImageQue(requestQueue: RequestQueue, imageQue: ImageQue, width:Int = 0, height:Int = 0){
+    fun addImageQue(requestQueue: RequestQueue, imageQue: ImageQue, width: Int = 0, height: Int = 0) {
 
-        val imageLoader = if (loaderMap.containsKey(requestQueue)){
+        val imageLoader = if (loaderMap.containsKey(requestQueue)) {
             loaderMap[requestQueue]
-        }else{
+        } else {
             ImageLoader(requestQueue, cache).apply {
                 loaderMap.put(requestQueue, this)
             }
@@ -33,7 +33,7 @@ object ImageLoadManger{
         //cancel
         val imageContainer = imageQue.imageView.tag
 
-        if(imageContainer != null && imageContainer is ImageLoader.ImageContainer){
+        if (imageContainer != null && imageContainer is ImageLoader.ImageContainer) {
             imageContainer.cancelRequest();
         }
         val imageListener = ImageLoader.getImageListener(imageQue.imageView, imageQue.resourceId, imageQue.resourceId)
@@ -42,7 +42,7 @@ object ImageLoadManger{
 }
 
 
-class MyImageCache(maxSize: Int) : ImageLoader.ImageCache{
+class MyImageCache(maxSize: Int) : ImageLoader.ImageCache {
     val memoryCache: LruCache<String, Bitmap> = object : LruCache<String, Bitmap>(maxSize) {
         override fun sizeOf(key: String, value: Bitmap): Int {
             return value.rowBytes * value.height
