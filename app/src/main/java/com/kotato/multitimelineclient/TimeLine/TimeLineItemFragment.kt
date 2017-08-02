@@ -8,11 +8,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
 import com.kotato.multitimelineclient.R
 import com.kotato.multitimelineclient.SNSService.TwitterService
 import com.mopub.volley.toolbox.Volley
-import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
 
@@ -26,6 +24,7 @@ class TimeLineItemFragment : ListFragment(){
     override fun onStart() {
         super.onStart()
         listAdapter = adapter
+
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
