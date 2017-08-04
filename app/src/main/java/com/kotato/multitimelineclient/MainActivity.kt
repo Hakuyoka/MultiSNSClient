@@ -8,25 +8,25 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.Menu
 import android.view.View
-import com.github.gfx.android.orma.OrmaDatabaseBuilderBase
-import com.kotato.multitimelineclient.AccountManage.*
+import com.kotato.multitimelineclient.AccountManage.AccountsMangeActivity
+import com.kotato.multitimelineclient.AccountManage.getAccountList
 import com.kotato.multitimelineclient.Push.ACTION_LOCAL_PUSH
 import com.kotato.multitimelineclient.Push.NotificationReceiver
 import com.kotato.multitimelineclient.Push.PushService
 import com.kotato.multitimelineclient.Push.REQ_CODE
 import com.kotato.multitimelineclient.SNSService.TwitterService
-import com.kotato.multitimelineclient.TimeLine.TIME_LINE_TYPE
-import com.kotato.multitimelineclient.TimeLine.TimeLineActivity
-import com.kotato.multitimelineclient.TimeLine.getTimeList
+import com.kotato.multitimelineclient.TimeLine.*
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.models.Tweet
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.launch
 import okhttp3.OkHttpClient
 import java.util.concurrent.CountDownLatch
 
@@ -120,6 +120,10 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         println(getTimeList(TwitterCore.getInstance().sessionManager.activeSession.userId, TIME_LINE_TYPE.HOME.id))
+        launch(CommonPool) {
+            OrmaHolder.ORMA.insertIntoTimeLineItem(TimeLineItem(0, TwitterCore.getInstance().sessionManager.activeSession.userId, "name", "test", "icons",
+                    null, TwitterCore.getInstance().sessionManager.activeSession.userId, 0, Medias("image", listOf()), 9))
+        }
 
     }
 

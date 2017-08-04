@@ -9,14 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import com.kotato.multitimelineclient.R
-import java.util.ArrayList
-import android.graphics.BitmapFactory
-import android.graphics.Bitmap
-import okhttp3.OkHttpClient
-import java.io.IOException
-import java.io.InputStream
-import java.net.URI
-import java.net.URL
+import java.util.*
 
 
 /**
@@ -28,6 +21,7 @@ class AccountListAdapter(context: Context) : ArrayAdapter<Account>(context, 0) {
     val resource = R.layout.account_item_layout
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+
         var view: View = if (convertView == null) {
             val inflater = LayoutInflater.from(context)
             inflater.inflate(resource, parent, false)

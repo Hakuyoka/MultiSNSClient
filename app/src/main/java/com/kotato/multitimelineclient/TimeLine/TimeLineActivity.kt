@@ -17,7 +17,6 @@ class TimeLineActivity : AppCompatActivity() {
     val SUBMIT_CODE = 100
     var listFragment = TimeLineItemFragment()
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_time_line)

@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import com.google.gson.Gson
 import com.kotato.multitimelineclient.AccountManage.Account
+import com.kotato.multitimelineclient.TimeLine.Medias
 import com.kotato.multitimelineclient.TimeLine.TIME_LINE_TYPE
 import com.kotato.multitimelineclient.TimeLine.TimeLineItem
 import com.kotato.multitimelineclient.TimeLine.save
@@ -16,7 +17,6 @@ import com.twitter.sdk.android.core.models.Tweet
 import com.twitter.sdk.android.core.models.User
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.launch
 import okhttp3.MediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -33,13 +33,35 @@ import java.util.concurrent.CountDownLatch
 
 object TwitterService : SNNService {
 
+    enum class MEDIA_TYPE(val cagotery: String, val typeArr: List<String>) {
 
+        IMAGE_TYPE("image", listOf("photo", "animated_gif")),
+        MOVIE_TYPE("movie", listOf(""));
+
+        fun includes(type: String): Boolean {
+            return this.typeArr.contains(type)
+        }
+
+        companion object {
+            fun get(type: String): MEDIA_TYPE? {
+                return if (IMAGE_TYPE.includes(type)) {
+                    IMAGE_TYPE
+                } else if (MOVIE_TYPE.includes(type)) {
+                    MOVIE_TYPE
+                } else {
+                    null
+                }
+            }
+        }
+
+    }
     val gson = Gson()
     /***
      * ログインユーザのホームタイムラインを取得
      * @param id
      */
     override fun getTimeLine(id: Long?) = async(CommonPool) {
+        Log.d("Call Service", "Get Twitter TimeLine")
         var timeLineItems: List<TimeLineItem> = listOf()
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
         if (activeSession != null) {
@@ -51,9 +73,19 @@ object TwitterService : SNNService {
                 //エラーだとボディがからになる？
                 if(result?.body() != null){
                     timeLineItems = result.body().map {
+                        val media = it.extendedEntities?.media?.find { it.type != null }
+                        var medias: Medias? = null
+                        media?.apply {
+                            val mediaType = MEDIA_TYPE.get(media?.type)
+                            val mediaUrls = it.extendedEntities?.media?.filter { mediaType?.includes(it.type) ?: false }?.map { it.mediaUrlHttps }
+                            if (mediaType != null && mediaUrls != null) {
+                                medias = Medias(mediaType.cagotery, mediaUrls)
+                            }
+                        }
+
                         TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
                                 it.extendedEntities?.media?.filter { it.type == "photo" }?.map { it.mediaUrlHttps }, activeSession.userId,
-                                TIME_LINE_TYPE.HOME.id)
+                                TIME_LINE_TYPE.HOME.id, medias)
                     }
                     timeLineItems.save()
                 }else{
@@ -72,24 +104,36 @@ object TwitterService : SNNService {
      * @param callback
      *
      */
-    override fun getMentions(callback: (List<TimeLineItem>) -> Unit) = async(CommonPool) {
+    override fun getMentions(id: Long?) = async(CommonPool) {
+        Log.d("Call Service", "Get Twitter Mentions from $id")
         var timeLineItems: List<TimeLineItem> = listOf()
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
         if (activeSession != null) {
             val appClient = TwitterApiClient(activeSession)
-            val call = appClient.statusesService.mentionsTimeline(null, null, null, null, null, null)
+            val call = appClient.statusesService.mentionsTimeline(null, id, null, null, null, null)
           try {
                 val result = call?.execute()
                 //エラーだとボディがからになる？
             if(result?.body() != null){
                 timeLineItems = result.body().map {
-                        TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
-                                it.extendedEntities?.media?.filter { it.type == "photo" }?.map { it.mediaUrlHttps }, activeSession.userId, TIME_LINE_TYPE.MENTION.id)
+                    val media = it.extendedEntities?.media?.find { it.type != null }
+                    var medias: Medias? = null
+                    media?.apply {
+                        val mediaType = MEDIA_TYPE.get(media?.type)
+                        val mediaUrls = it.extendedEntities?.media?.filter { mediaType?.includes(it.type) ?: false }?.map { it.mediaUrlHttps }
+                        if (mediaType != null && mediaUrls != null) {
+                            medias = Medias(mediaType.cagotery, mediaUrls)
+                        }
                     }
-                    callback.invoke(timeLineItems)
+
+                    TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
+                            it.extendedEntities?.media?.filter { it.type == "photo" }?.map { it.mediaUrlHttps }, activeSession.userId,
+                            TIME_LINE_TYPE.MENTION.id, medias)
+                    }
                 }else{
                     Log.d("Call Twitter Mention", result?.errorBody()?.string())
                 }
+              timeLineItems.save()
             }catch (e: IOException){
                 e.printStackTrace()
             }
@@ -114,8 +158,20 @@ object TwitterService : SNNService {
                     Log.d("Get Mentions Success", gson.toJson(result.data))
                     timeLineItems = result.data.map {
                         it ->
+                        println(it.extendedEntities?.media?.map { it.type })
+                        val media = it.extendedEntities?.media?.find { it.type != null }
+                        var medias: Medias? = null
+                        media?.apply {
+                            val mediaType = MEDIA_TYPE.get(media?.type)
+                            val mediaUrls = it.extendedEntities?.media?.filter { mediaType?.includes(it.type) ?: false }?.map { it.mediaUrlHttps }
+                            if (mediaType != null && mediaUrls != null) {
+                                medias = Medias(mediaType.cagotery, mediaUrls)
+                            }
+                        }
+
                         TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
-                                it.extendedEntities?.media?.filter { it.type == "photo" }?.map { it.mediaUrlHttps }, activeSession.userId, TIME_LINE_TYPE.FAVORITE.id)
+                                it.extendedEntities?.media?.filter { it.type == "photo" }?.map { it.mediaUrlHttps }, activeSession.userId,
+                                TIME_LINE_TYPE.FAVORITE.id, medias)
                     }
 
                     callback.invoke(timeLineItems)
