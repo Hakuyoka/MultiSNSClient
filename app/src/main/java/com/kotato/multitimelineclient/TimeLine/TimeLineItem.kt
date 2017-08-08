@@ -41,8 +41,15 @@ fun getTimeList(userId: Long, type: Int, limit: Long = 40): List<TimeLineItem> {
 
 fun List<TimeLineItem>.save() {
     OrmaHolder.ORMA.transactionSync {
-        val inserter = OrmaHolder.ORMA.prepareInsertIntoTimeLineItem()
-        inserter.executeAll(this)
+        this.forEach {
+            // Direct Associationができるはずだけどできなかったのでこっちで
+            val mediaId = it.media?.apply {
+                this.key = OrmaHolder.ORMA.insertIntoMedias(this)
+            }
+            OrmaHolder.ORMA.insertIntoTimeLineItem(it.apply {
+                media = mediaId
+            })
+        }
     }
 }
 
@@ -56,11 +63,11 @@ data class TimeLineItem(
         @Setter("mediaUrls") @Column val mediaUrls: List<String>? = null,
         @Setter("owner") @Column(indexed = true) val owner: Long? = TwitterCore.getInstance().sessionManager.activeSession.userId,
         @Setter("type") @Column(indexed = true) val type: Int,
-        @Setter("media") @Nullable @Column(indexed = true) val media: Medias? = null,
+        @Setter("media") @Nullable @Column(indexed = true) var media: Medias? = null,
         @Setter("key") @PrimaryKey(autoincrement = true) val key: Long = 0L)
 
 @Table
 data class Medias(
         @Setter("type") @Column val type: String,
         @Setter("urls") @Column val urls: List<String>,
-        @Setter("key") @PrimaryKey val key: Long = 0L)
+        @Setter("key") @PrimaryKey var key: Long = 0L)

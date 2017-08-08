@@ -21,7 +21,7 @@ import com.kotato.multitimelineclient.Push.NotificationReceiver
 import com.kotato.multitimelineclient.Push.PushService
 import com.kotato.multitimelineclient.Push.REQ_CODE
 import com.kotato.multitimelineclient.SNSService.TwitterService
-import com.kotato.multitimelineclient.TimeLine.*
+import com.kotato.multitimelineclient.TimeLine.TimeLineActivity
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.models.Tweet
 import kotlinx.coroutines.experimental.CommonPool
@@ -118,12 +118,14 @@ class MainActivity : AppCompatActivity() {
 //            }
 //
 //        }
-
-        println(getTimeList(TwitterCore.getInstance().sessionManager.activeSession.userId, TIME_LINE_TYPE.HOME.id))
-        launch(CommonPool) {
-            OrmaHolder.ORMA.insertIntoTimeLineItem(TimeLineItem(0, TwitterCore.getInstance().sessionManager.activeSession.userId, "name", "test", "icons",
-                    null, TwitterCore.getInstance().sessionManager.activeSession.userId, 0, Medias("image", listOf()), 9))
-        }
+//
+//        println(getTimeList(TwitterCore.getInstance().sessionManager.activeSession.userId, TIME_LINE_TYPE.HOME.id))
+//        launch(CommonPool) {
+//            OrmaHolder.ORMA.insertIntoTimeLineItem(TimeLineItem(0, TwitterCore.getInstance().sessionManager.activeSession.userId, "name", "test", "icons",
+//                    null, TwitterCore.getInstance().sessionManager.activeSession.userId, 0, Medias("image", listOf()).apply {
+//                key = OrmaHolder.ORMA.insertIntoMedias(this)
+//            }, 9))
+//        }
 
     }
 
