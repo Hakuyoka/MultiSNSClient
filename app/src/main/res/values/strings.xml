@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">MultiTimeLineClient</string>
-    <string name="com.twitter.sdk.android.CONSUMER_KEY">AKi6y32pKlIR3ZONN71lQFYur</string>
-    <string name="com.twitter.sdk.android.CONSUMER_SECRET">2Vyhs97OJC1osp55tZsEwuJxWSbfx7fMpQdQcweBLGcxuKSlm8</string>
+    <string name="com.twitter.sdk.android.CONSUMER_KEY">XXXX</string>
+    <string name="com.twitter.sdk.android.CONSUMER_SECRET">XXXX</string>
     <string name="title_activity_accounts_mange">AccountsMangeActivity</string>
 
     <!-- TODO: Remove or change this placeholder text -->

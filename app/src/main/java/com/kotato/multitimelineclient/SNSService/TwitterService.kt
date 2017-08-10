@@ -35,8 +35,8 @@ object TwitterService : SNNService {
 
     enum class MEDIA_TYPE(val cagotery: String, val typeArr: List<String>) {
 
-        IMAGE_TYPE("image", listOf("photo", "animated_gif")),
-        MOVIE_TYPE("movie", listOf(""));
+        IMAGE_TYPE("image", listOf("photo")),
+        MOVIE_TYPE("movie", listOf("animated_gif", "video"));
 
         fun includes(type: String): Boolean {
             return this.typeArr.contains(type)
@@ -158,12 +158,21 @@ object TwitterService : SNNService {
                     Log.d("Get Mentions Success", gson.toJson(result.data))
                     timeLineItems = result.data.map {
                         it ->
-                        println(it.extendedEntities?.media?.map { it.type })
+                        println(gson.toJson(it))
                         val media = it.extendedEntities?.media?.find { it.type != null }
                         var medias: Medias? = null
                         media?.apply {
                             val mediaType = MEDIA_TYPE.get(media?.type)
-                            val mediaUrls = it.extendedEntities?.media?.filter { mediaType?.includes(it.type) ?: false }?.map { it.mediaUrlHttps }
+                            val mediaUrls: List<String>? = when (mediaType) {
+                                MEDIA_TYPE.IMAGE_TYPE -> it.extendedEntities?.media?.filter { mediaType.includes(it.type) }?.map { it.mediaUrlHttps }
+                                MEDIA_TYPE.MOVIE_TYPE -> it.extendedEntities?.media?.filter { mediaType.includes(it.type) }
+                                        //mp4がないことは想定はしてない
+                                        ?.map { it.videoInfo.variants.find { it.contentType == "video/mp4" }?.url ?: it.videoInfo.variants[0].url }
+                                else -> listOf()
+                            }
+
+                            println(it.extendedEntities?.media?.map { it.type })
+                            println(mediaUrls)
                             if (mediaType != null && mediaUrls != null) {
                                 medias = Medias(mediaType.cagotery, mediaUrls)
                             }

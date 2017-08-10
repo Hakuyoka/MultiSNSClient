@@ -1,26 +1,17 @@
 package com.kotato.multitimelineclient.TimeLine
 
-import android.app.FragmentManager
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.util.AttributeSet
-import android.util.Log
-import android.util.LruCache
-import android.util.Xml
-import android.view.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.*
-import com.kotato.multitimelineclient.*
-import com.kotato.multitimelineclient.Media.MediaTabbedActivity
-import com.mopub.volley.RequestQueue
-import com.mopub.volley.toolbox.ImageLoader
-import android.widget.GridLayout.LayoutParams
 import com.bumptech.glide.Glide
-import com.bumptech.glide.annotation.GlideModule
-import com.bumptech.glide.load.engine.executor.GlideExecutor
-import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.request.RequestOptions
-import org.xmlpull.v1.XmlPullParser
+import com.kotato.multitimelineclient.Media.MediaTabbedActivity
+import com.kotato.multitimelineclient.R
+import com.mopub.volley.RequestQueue
 
 
 /**
@@ -65,8 +56,9 @@ class TimeLineAdapter(context: Context, val queue: RequestQueue) : ArrayAdapter<
         //ListViewは使い回されるので、一度リセット
         layout.removeAllViews()
 
-        item.mediaUrls?.let {
-            mediaUrls ->
+        item.media?.let {
+            media ->
+            val mediaUrls = media.urls
             //画像の枚数に応じてグリッドレイアウトを変更
             val gridLayout = GridLayout(context).apply {
                 layoutParams = GridLayout.LayoutParams(parent?.layoutParams).apply {
@@ -85,9 +77,8 @@ class TimeLineAdapter(context: Context, val queue: RequestQueue) : ArrayAdapter<
             val viewHeight = maxHeight * 0.9 / gridLayout.columnCount
             //画像拡大Viewに渡すURIの配列
             var uris = arrayListOf<String>()
-            uris.addAll(item.mediaUrls.toList())
-
-            mediaUrls.map {
+            uris.addAll(mediaUrls)
+            uris.map {
                 uri ->
                 var imageView = ImageView(context).apply {
                     adjustViewBounds = true
@@ -98,6 +89,7 @@ class TimeLineAdapter(context: Context, val queue: RequestQueue) : ArrayAdapter<
                     setOnClickListener {
                         val intent = Intent(context, MediaTabbedActivity::class.java)
                         intent.putExtra("uris", uris)
+                        intent.putExtra("type", media.type)
                         context.startActivity(intent)
                     }
                 }

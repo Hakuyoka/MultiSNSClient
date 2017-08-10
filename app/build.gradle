@@ -57,6 +57,8 @@ dependencies {
     annotationProcessor 'com.github.gfx.android.orma:orma-processor:4.2.1'
     compile 'com.github.gfx.android.orma:orma:4.2.1'
     kapt 'com.github.gfx.android.orma:orma-processor:4.2.1'
+    //exop
+    compile 'com.google.android.exoplayer:exoplayer:latest.release'
 
 }
 repositories {
