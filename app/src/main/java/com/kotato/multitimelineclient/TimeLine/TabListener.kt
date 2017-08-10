@@ -33,9 +33,9 @@ class TabListener(val timeLineItemFragment: TimeLineItemFragment) : TabLayout.On
             val maxId = savedList.maxBy { it.id }?.id
             maxIdMap.put(tab.position, maxId)
             val timeLineItem = when (tab.position) {
-                0 -> TwitterService.getTimeLine(maxId).await()
+                0 -> TwitterService.getHomeTimeLine(maxId).await()
                 1 -> TwitterService.getMentions(maxId).await()
-                2 -> TwitterService.getFavoriteList { }.await()
+                2 -> TwitterService.getFavorites().await()
                 else -> mutableListOf()
             }
             Log.d("Tab", "First Get TimeLine " + timeLineItem.size)
@@ -76,9 +76,9 @@ class TabListener(val timeLineItemFragment: TimeLineItemFragment) : TabLayout.On
 
             val maxId = maxIdMap.get(tab.position)
             val timeLineItem = when (tab.position) {
-                0 -> TwitterService.getTimeLine(maxId).await()
+                0 -> TwitterService.getHomeTimeLine(maxId).await()
                 1 -> TwitterService.getMentions(maxId).await()
-                2 -> TwitterService.getFavoriteList { }.await()
+                2 -> TwitterService.getFavorites().await()
                 else -> mutableListOf()
             }
 

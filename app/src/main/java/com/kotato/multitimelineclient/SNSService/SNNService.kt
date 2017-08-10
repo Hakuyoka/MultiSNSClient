@@ -11,8 +11,9 @@ import kotlinx.coroutines.experimental.Deferred
  */
 
 interface SNNService{
-    fun getTimeLine(id: Long? = null) : Deferred<List<TimeLineItem>>
+    fun getHomeTimeLine(id: Long? = null): Deferred<List<TimeLineItem>>
     fun getMentions(id: Long? = null): Deferred<List<TimeLineItem>>
+    fun getFavorites(): Deferred<List<TimeLineItem>>
     fun getImage(urlStr: String, callback:(Bitmap?) -> Unit) : Deferred<Bitmap?>
     fun getUserInfo(callback:(Account?) -> Unit): Deferred<Account?>
     fun authlize(view: View, callback: (Any) -> Unit): Deferred<Any?>

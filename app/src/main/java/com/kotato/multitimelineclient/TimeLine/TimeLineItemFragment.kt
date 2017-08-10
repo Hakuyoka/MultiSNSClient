@@ -40,9 +40,9 @@ class TimeLineItemFragment : ListFragment(){
 
             async(UI){
                 val timeLineItem = when (TabListener.postion?.id) {
-                    0 -> TwitterService.getTimeLine(maxId).await()
+                    0 -> TwitterService.getHomeTimeLine(maxId).await()
                     1 -> TwitterService.getMentions(maxId).await()
-                    2 -> TwitterService.getFavoriteList { }.await()
+                    2 -> TwitterService.getFavorites().await()
                     else -> mutableListOf()
                 }
                 val insertTimeLine = margeTimeLine(timeLineItem)

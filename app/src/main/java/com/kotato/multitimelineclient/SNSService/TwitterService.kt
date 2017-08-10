@@ -60,29 +60,19 @@ object TwitterService : SNNService {
      * ログインユーザのホームタイムラインを取得
      * @param id
      */
-    override fun getTimeLine(id: Long?) = async(CommonPool) {
-        Log.d("Call Service", "Get Twitter TimeLine")
+    override fun getHomeTimeLine(id: Long?) = async(CommonPool) {
+        Log.d("Call Service", "Get Twitter HomeTimeLine from $id")
         var timeLineItems: List<TimeLineItem> = listOf()
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
         if (activeSession != null) {
             val appClient = TwitterApiClient(activeSession)
             val call = appClient.statusesService.homeTimeline(null, id, null, false, null, null, null)
-//            Log.d("Call Twitter TImeLine", id?.toString())
             try {
                 val result = call?.execute()
                 //エラーだとボディがからになる？
                 if(result?.body() != null){
                     timeLineItems = result.body().map {
-                        val media = it.extendedEntities?.media?.find { it.type != null }
-                        var medias: Medias? = null
-                        media?.apply {
-                            val mediaType = MEDIA_TYPE.get(media?.type)
-                            val mediaUrls = it.extendedEntities?.media?.filter { mediaType?.includes(it.type) ?: false }?.map { it.mediaUrlHttps }
-                            if (mediaType != null && mediaUrls != null) {
-                                medias = Medias(mediaType.cagotery, mediaUrls)
-                            }
-                        }
-
+                        var medias: Medias? = convertToMedia(it)
                         TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
                                 it.extendedEntities?.media?.filter { it.type == "photo" }?.map { it.mediaUrlHttps }, activeSession.userId,
                                 TIME_LINE_TYPE.HOME.id, medias)
@@ -101,7 +91,7 @@ object TwitterService : SNNService {
 
     /***
      * ログインユーザへのメンションを取得
-     * @param callback
+     * @param id
      *
      */
     override fun getMentions(id: Long?) = async(CommonPool) {
@@ -116,16 +106,7 @@ object TwitterService : SNNService {
                 //エラーだとボディがからになる？
             if(result?.body() != null){
                 timeLineItems = result.body().map {
-                    val media = it.extendedEntities?.media?.find { it.type != null }
-                    var medias: Medias? = null
-                    media?.apply {
-                        val mediaType = MEDIA_TYPE.get(media?.type)
-                        val mediaUrls = it.extendedEntities?.media?.filter { mediaType?.includes(it.type) ?: false }?.map { it.mediaUrlHttps }
-                        if (mediaType != null && mediaUrls != null) {
-                            medias = Medias(mediaType.cagotery, mediaUrls)
-                        }
-                    }
-
+                    var medias: Medias? = convertToMedia(it)
                     TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
                             it.extendedEntities?.media?.filter { it.type == "photo" }?.map { it.mediaUrlHttps }, activeSession.userId,
                             TIME_LINE_TYPE.MENTION.id, medias)
@@ -143,67 +124,52 @@ object TwitterService : SNNService {
 
     /**
      * ログインユーザのファボリストを取得
-     * @param callback
      */
-    fun getFavoriteList(callback: (List<TimeLineItem>) -> Unit) = async(CommonPool) {
+    override fun getFavorites() = async(CommonPool) {
+        Log.d("Call Service", "Get Twitter Favorites")
         var timeLineItems: List<TimeLineItem> = listOf()
         val activeSession = TwitterCore.getInstance().sessionManager.activeSession
         if (activeSession != null) {
             val appClient = TwitterApiClient(activeSession)
             val call = appClient.favoriteService.list(null, null, null, null, null, null)
-
-            var latch = CountDownLatch(1)
-            call?.enqueue(object : Callback<List<Tweet>>() {
-                override fun success(result: Result<List<Tweet>>) {
-                    Log.d("Get Mentions Success", gson.toJson(result.data))
-                    timeLineItems = result.data.map {
-                        it ->
-                        println(gson.toJson(it))
-                        val media = it.extendedEntities?.media?.find { it.type != null }
-                        var medias: Medias? = null
-                        media?.apply {
-                            val mediaType = MEDIA_TYPE.get(media?.type)
-                            val mediaUrls: List<String>? = when (mediaType) {
-                                MEDIA_TYPE.IMAGE_TYPE -> it.extendedEntities?.media?.filter { mediaType.includes(it.type) }?.map { it.mediaUrlHttps }
-                                MEDIA_TYPE.MOVIE_TYPE -> it.extendedEntities?.media?.filter { mediaType.includes(it.type) }
-                                        //mp4がないことは想定はしてない
-                                        ?.map { it.videoInfo.variants.find { it.contentType == "video/mp4" }?.url ?: it.videoInfo.variants[0].url }
-                                else -> listOf()
-                            }
-
-                            println(it.extendedEntities?.media?.map { it.type })
-                            println(mediaUrls)
-                            if (mediaType != null && mediaUrls != null) {
-                                medias = Medias(mediaType.cagotery, mediaUrls)
-                            }
-                        }
-
+            try {
+                val result = call?.execute()
+                //エラーだとボディがからになる？
+                if (result?.body() != null) {
+                    timeLineItems = result.body().map {
+                        var medias: Medias? = convertToMedia(it)
                         TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
                                 it.extendedEntities?.media?.filter { it.type == "photo" }?.map { it.mediaUrlHttps }, activeSession.userId,
                                 TIME_LINE_TYPE.FAVORITE.id, medias)
                     }
-
-                    callback.invoke(timeLineItems)
-                    latch.countDown()
+                } else {
+                    Log.d("Call Twitter Favorite", result?.errorBody()?.string())
                 }
-
-                override fun failure(exception: TwitterException) {
-                    Log.e("Get Timeline Failur", exception.toString())
-                    latch.countDown()
-
-                }
-
-
-            })
-
-
-            try {
-                latch.await()
-            } catch (e: InterruptedException) {
+            } catch (e: IOException) {
                 e.printStackTrace()
             }
         }
         return@async timeLineItems
+    }
+
+    private fun convertToMedia(it: Tweet): Medias? {
+        val media = it.extendedEntities?.media?.find { it.type != null }
+        var medias: Medias? = null
+        media?.apply {
+            val mediaType = MEDIA_TYPE.get(media?.type)
+            val mediaUrls: List<String>? = when (mediaType) {
+                MEDIA_TYPE.IMAGE_TYPE -> it.extendedEntities?.media?.filter { mediaType.includes(it.type) }?.map { it.mediaUrlHttps }
+                MEDIA_TYPE.MOVIE_TYPE -> it.extendedEntities?.media?.filter { mediaType.includes(it.type) }
+                        //mp4がないことは想定はしてない
+                        ?.map { it.videoInfo.variants.find { it.contentType == "video/mp4" }?.url ?: it.videoInfo.variants[0].url }
+                else -> listOf()
+            }
+
+            if (mediaType != null && mediaUrls != null) {
+                medias = Medias(mediaType.cagotery, mediaUrls)
+            }
+        }
+        return medias
     }
 
     /**
