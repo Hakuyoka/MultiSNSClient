@@ -1,11 +1,6 @@
-package com.kotato.multitimelineclient.AccountManage
+package com.kotato.multitimelineclient.model
 
-import android.graphics.BitmapFactory
-import android.media.Image
-import com.twitter.sdk.android.R
 import android.graphics.drawable.Drawable
-import android.os.Parcel
-import android.os.Parcelable
 import android.support.annotation.Nullable
 import android.util.Log
 import com.github.gfx.android.orma.annotation.Column
@@ -13,12 +8,9 @@ import com.github.gfx.android.orma.annotation.PrimaryKey
 import com.github.gfx.android.orma.annotation.Setter
 import com.github.gfx.android.orma.annotation.Table
 import com.kotato.multitimelineclient.OrmaHolder
-import com.twitter.sdk.android.core.TwitterAuthToken
-import com.twitter.sdk.android.core.TwitterCore
-import com.twitter.sdk.android.core.TwitterSession
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.launch
-import java.io.*
+import java.io.Serializable
 
 
 /**
@@ -42,6 +34,7 @@ data class Account(val id: String, val name: String, val email: String? = "", va
 
     val dto : Accounts
         get() = Accounts(0L, this.id, this.name, this.email ?: "", this.type, this.imageUrl, this.twitterSession)
+
     override fun toString(): String {
         return "id = $id, name = $name, email = $email, type = $type, imageUrl = $imageUrl, iSelected = $isSelected"
     }

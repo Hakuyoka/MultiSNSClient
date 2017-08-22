@@ -8,9 +8,9 @@ import android.support.design.widget.TabLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.view.Menu
-import com.kotato.multitimelineclient.AccountManage.getAccountList
 import com.kotato.multitimelineclient.Input.InputActivity
 import com.kotato.multitimelineclient.R
+import com.kotato.multitimelineclient.model.getAccountList
 import com.twitter.sdk.android.core.TwitterCore
 
 class TimeLineActivity : AppCompatActivity() {

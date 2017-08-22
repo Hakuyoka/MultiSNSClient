@@ -11,6 +11,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.kotato.multitimelineclient.Media.MediaTabbedActivity
 import com.kotato.multitimelineclient.R
+import com.kotato.multitimelineclient.model.TimeLineItem
 import com.mopub.volley.RequestQueue
 
 

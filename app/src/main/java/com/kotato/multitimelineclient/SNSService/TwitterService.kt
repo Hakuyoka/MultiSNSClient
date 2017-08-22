@@ -5,11 +5,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import android.view.View
 import com.google.gson.Gson
-import com.kotato.multitimelineclient.AccountManage.Account
-import com.kotato.multitimelineclient.TimeLine.Medias
-import com.kotato.multitimelineclient.TimeLine.TIME_LINE_TYPE
-import com.kotato.multitimelineclient.TimeLine.TimeLineItem
-import com.kotato.multitimelineclient.TimeLine.save
+import com.kotato.multitimelineclient.model.*
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.identity.TwitterLoginButton
 import com.twitter.sdk.android.core.models.Media
@@ -70,17 +66,15 @@ object TwitterService : SNNService {
             try {
                 val result = call?.execute()
                 //エラーだとボディがからになる？
-                if(result?.body() != null){
-                    timeLineItems = result.body().map {
+                result?.body()?.let {
+                    timeLineItems = it.map {
                         var medias: Medias? = convertToMedia(it)
                         TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
                                 it.extendedEntities?.media?.filter { it.type == "photo" }?.map { it.mediaUrlHttps }, activeSession.userId,
-                                TIME_LINE_TYPE.HOME.id, medias)
+                                TIME_LINE_TYPE.FAVORITE.id, medias)
                     }
-                    timeLineItems.save()
-                }else{
-                    Log.d("Call Twitter TImeLine", result?.errorBody()?.string())
                 }
+                timeLineItems.save()
             }catch (e: IOException){
                 e.printStackTrace()
             }
@@ -104,16 +98,14 @@ object TwitterService : SNNService {
           try {
                 val result = call?.execute()
                 //エラーだとボディがからになる？
-            if(result?.body() != null){
-                timeLineItems = result.body().map {
-                    var medias: Medias? = convertToMedia(it)
-                    TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
-                            it.extendedEntities?.media?.filter { it.type == "photo" }?.map { it.mediaUrlHttps }, activeSession.userId,
-                            TIME_LINE_TYPE.MENTION.id, medias)
-                    }
-                }else{
-                    Log.d("Call Twitter Mention", result?.errorBody()?.string())
-                }
+              result?.body()?.let {
+                  timeLineItems = it.map {
+                      var medias: Medias? = convertToMedia(it)
+                      TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
+                              it.extendedEntities?.media?.filter { it.type == "photo" }?.map { it.mediaUrlHttps }, activeSession.userId,
+                              TIME_LINE_TYPE.FAVORITE.id, medias)
+                  }
+              }
               timeLineItems.save()
             }catch (e: IOException){
                 e.printStackTrace()
@@ -135,15 +127,13 @@ object TwitterService : SNNService {
             try {
                 val result = call?.execute()
                 //エラーだとボディがからになる？
-                if (result?.body() != null) {
-                    timeLineItems = result.body().map {
+                result?.body()?.let {
+                    timeLineItems = it.map {
                         var medias: Medias? = convertToMedia(it)
                         TimeLineItem(it.id, it.user.id, it.user.name, it.text, it.user.profileImageUrlHttps,
                                 it.extendedEntities?.media?.filter { it.type == "photo" }?.map { it.mediaUrlHttps }, activeSession.userId,
                                 TIME_LINE_TYPE.FAVORITE.id, medias)
                     }
-                } else {
-                    Log.d("Call Twitter Favorite", result?.errorBody()?.string())
                 }
             } catch (e: IOException) {
                 e.printStackTrace()

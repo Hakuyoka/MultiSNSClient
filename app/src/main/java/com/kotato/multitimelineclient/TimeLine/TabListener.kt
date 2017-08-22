@@ -3,6 +3,9 @@ package com.kotato.multitimelineclient.TimeLine
 import android.support.design.widget.TabLayout
 import android.util.Log
 import com.kotato.multitimelineclient.SNSService.TwitterService
+import com.kotato.multitimelineclient.model.TIME_LINE_TYPE
+import com.kotato.multitimelineclient.model.TimeLineItem
+import com.kotato.multitimelineclient.model.getTimeList
 import com.twitter.sdk.android.core.TwitterCore
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI

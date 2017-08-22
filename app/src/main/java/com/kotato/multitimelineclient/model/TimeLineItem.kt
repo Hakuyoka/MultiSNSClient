@@ -1,4 +1,4 @@
-package com.kotato.multitimelineclient.TimeLine
+package com.kotato.multitimelineclient.model
 
 import android.support.annotation.Nullable
 import com.github.gfx.android.orma.annotation.Column

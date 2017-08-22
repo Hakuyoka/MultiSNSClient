@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.kotato.multitimelineclient.R
 import com.kotato.multitimelineclient.SNSService.TwitterService
+import com.kotato.multitimelineclient.model.TimeLineItem
 import com.mopub.volley.toolbox.Volley
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async

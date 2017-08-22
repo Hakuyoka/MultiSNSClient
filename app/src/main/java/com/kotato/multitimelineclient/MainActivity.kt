@@ -10,25 +10,25 @@ import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.Toolbar
 import android.util.Log
 import android.view.Menu
 import android.view.View
+import android.webkit.WebView
 import com.kotato.multitimelineclient.AccountManage.AccountsMangeActivity
-import com.kotato.multitimelineclient.AccountManage.getAccountList
 import com.kotato.multitimelineclient.Push.ACTION_LOCAL_PUSH
 import com.kotato.multitimelineclient.Push.NotificationReceiver
 import com.kotato.multitimelineclient.Push.PushService
 import com.kotato.multitimelineclient.Push.REQ_CODE
+import com.kotato.multitimelineclient.SNSService.MastodonService
 import com.kotato.multitimelineclient.SNSService.TwitterService
 import com.kotato.multitimelineclient.TimeLine.TimeLineActivity
-import com.twitter.sdk.android.core.*
-import com.twitter.sdk.android.core.models.Tweet
+import com.kotato.multitimelineclient.model.getAccountList
+import com.twitter.sdk.android.core.DefaultLogger
+import com.twitter.sdk.android.core.Twitter
+import com.twitter.sdk.android.core.TwitterConfig
+import com.twitter.sdk.android.core.TwitterCore
 import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
-import okhttp3.OkHttpClient
-import java.util.concurrent.CountDownLatch
 
 
 class MainActivity : AppCompatActivity() {
@@ -49,14 +49,10 @@ class MainActivity : AppCompatActivity() {
 //        Twitter.initialize(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val toolbar = findViewById(R.id.toolbar) as Toolbar
-        toolbar.title = ""
-        toolbar.setNavigationIcon(R.color.tw__composer_white)
 
         val options = BitmapFactory.Options().apply {
             inMutable = true
         }
-        println(TwitterCore.getInstance().sessionManager.activeSession.userId)
         val accountList = getAccountList()
         if(accountList.size > 0){
 
@@ -65,9 +61,7 @@ class MainActivity : AppCompatActivity() {
             bitmap.density = 240
             val drawable = BitmapDrawable(resources,bitmap)
             println(drawable.minimumWidth)
-            toolbar.navigationIcon = drawable
         }
-        setSupportActionBar(toolbar)
 
         startService()
     }
@@ -145,63 +139,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun sendRequest(view: View){
-//        val res = object: AsyncTask<Void, Void, String>() {
-//            override fun doInBackground(vararg params: Void): String? {
-//                var res: String = ""
-//                try {
-//                    res = run("https://api.twitter.com/1.1/users/show.json?screen_name=boys_surface")
-//                    val resJson = JSONObject(res)
-//                    Log.i("MainActivity", resJson.toString())
-//                } catch(e: IOException) {
-//                    e.printStackTrace()
-//                } catch(e: JSONException) {
-//                    e.printStackTrace()
-//                }
-//                return res
-//            }
-//        }.execute()
-//
-//        Log.d("AsyncTest","start")
-//        runBlocking {
-//            Log.d("AsyncTest","start in")
-//            com.kotato.multitimelineclient.getUserInfo {
-//                tweet ->
-//                Log.d("AsyncTest",tweet.text)
-//            }.await()
-//            Log.d("AsyncTest","end in")
-//        }
-////        Log.d("AsyncTest","end")
-//        val REQUEST_CODE = 1
-//        ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_CODE)
-//        val permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-//
-//        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-//
-//            // Android 6.0 のみ、該当パーミッションが許可されていない場合
-//
-//            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
-//                // パーミッションが必要であることを明示するアプリケーション独自のUIを表示
-//            }
-//
-//        } else {
-//            // 許可済みの場合、もしくはAndroid 6.0以前
-//            // パーミッションが必要な処理
-//        }
-//
-//
-//        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-//        intent.addCategory(Intent.CATEGORY_OPENABLE)
-//        intent.type = "image/*"
-//        startActivityForResult(intent,1101)
+        MastodonService.authlize(this, {})
+        MastodonService.token
+        val webView = findViewById(R.id.web_view) as WebView
+        webView.loadUrl("https://mstdn.jp/oauth/authorize?client_id=9fdf8679dd5df6a5779c8c2c57bca000b9e2c45ed988a0ef934e35d885544c2c&response_type=code&redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=read%20write%20follow")
 
-//        TwitterService.getMentions {  }
-//
-//        val intent =  Intent(this, MediaTabbedActivity::class.java)
-//        intent.putExtra("uris", arrayListOf("1","2","3","3"))
-//        startActivity(intent)
-
-        stopService()
-        ormaTest()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -219,36 +161,6 @@ class MainActivity : AppCompatActivity() {
                     }
             }
         }
-    }
-
-    fun getUserInfo(callback:(Tweet) -> Unit) = async(CommonPool){
-        var resultstr:String = ""
-        println("start getUserInfo")
-        val twitterApiClient = TwitterApiClient(OkHttpClient())
-        val statusesService = twitterApiClient?.statusesService
-        val call = statusesService?.show(100L, false, false, false)
-        val latch = CountDownLatch(1)
-        call?.enqueue(object : Callback<Tweet>() {
-            override fun success(result: Result<Tweet>) {
-                println(""+result.data.text)
-                Log.i("Users", result.data.text)
-                resultstr = result.data.toString()
-                callback.invoke(result.data)
-                latch.countDown()
-            }
-
-            override fun failure(exception: TwitterException) {
-                println("errrrrrrr")
-            }
-        })
-        try {
-            latch.await()
-        }catch (e: Exception){
-
-        }
-
-        println("end getUserInfo")
-        return@async resultstr
     }
 
     fun goTimeLine(view: View){

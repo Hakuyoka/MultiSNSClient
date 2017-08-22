@@ -1,17 +1,18 @@
 package com.kotato.multitimelineclient.Input
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
-
 import com.kotato.multitimelineclient.R
 import com.kotato.multitimelineclient.SNSService.TwitterService
 import com.kotato.multitimelineclient.getPathFromUri
@@ -89,6 +90,7 @@ class InputActivity : AppCompatActivity() {
 
 
     fun selectImage(){
+        ActivityCompat.requestPermissions(this, listOf<String>(Manifest.permission.WRITE_EXTERNAL_STORAGE).toTypedArray(), 10)
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "image/*"

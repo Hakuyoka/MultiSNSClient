@@ -14,8 +14,8 @@ import com.kotato.multitimelineclient.MainActivity
 import com.kotato.multitimelineclient.OrmaHolder
 import com.kotato.multitimelineclient.R
 import com.kotato.multitimelineclient.SNSService.TwitterService
-import com.kotato.multitimelineclient.TimeLine.TIME_LINE_TYPE
-import com.kotato.multitimelineclient.TimeLine.getTimeList
+import com.kotato.multitimelineclient.model.TIME_LINE_TYPE
+import com.kotato.multitimelineclient.model.getTimeList
 import com.twitter.sdk.android.core.DefaultLogger
 import com.twitter.sdk.android.core.Twitter
 import com.twitter.sdk.android.core.TwitterConfig
@@ -64,25 +64,25 @@ class PushService: Service(){
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d("Push Service", "On Start Command")
+        TwitterCore.getInstance().sessionManager.activeSession?.apply {
+            val mentions = getTimeList(TwitterCore.getInstance().sessionManager.activeSession.userId, TIME_LINE_TYPE.MENTION.id)
+            maxId = mentions.maxBy { it.id }?.id
 
-        val mentions = getTimeList(TwitterCore.getInstance().sessionManager.activeSession.userId, TIME_LINE_TYPE.MENTION.id)
-        maxId = mentions.maxBy { it.id }?.id
-
-        Log.i("Push Service", "Timer Start")
-        timer = timer("check timeline", initialDelay = 1000 * 10, period = 1000 * 60 * 15) {
-            val context = this@PushService
-            val intent = Intent(context, NotificationReceiver::class.java)
-            val sender = PendingIntent.getBroadcast(context, REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-            //CommonPoolのなから@付きのthisは見れない？
-            val timeLine = TwitterService.getMentions(maxId)
-            launch(CommonPool) {
-                if (timeLine.await().size > 0) {
-                    intent.putExtra("count", timeLine.await().size)
-                    sender.send(context, REQ_CODE, intent)
-                    maxId = timeLine.await().maxBy { it.id }?.id
+            Log.i("Push Service", "Timer Start")
+            timer = timer("check timeline", initialDelay = 1000 * 10, period = 1000 * 60 * 15) {
+                val context = this@PushService
+                val intent = Intent(context, NotificationReceiver::class.java)
+                val sender = PendingIntent.getBroadcast(context, REQ_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+                //CommonPoolのなから@付きのthisは見れない？
+                val timeLine = TwitterService.getMentions(maxId)
+                launch(CommonPool) {
+                    if (timeLine.await().size > 0) {
+                        intent.putExtra("count", timeLine.await().size)
+                        sender.send(context, REQ_CODE, intent)
+                        maxId = timeLine.await().maxBy { it.id }?.id
+                    }
                 }
             }
-
         }
 
         return super.onStartCommand(intent, flags, startId)

@@ -1,17 +1,18 @@
 package com.kotato.multitimelineclient.AccountManage
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.util.Log
-
-import com.kotato.multitimelineclient.R
-import com.twitter.sdk.android.core.*
-import com.twitter.sdk.android.core.identity.TwitterAuthClient
-import android.content.Intent
 import android.view.Menu
+import com.kotato.multitimelineclient.R
+import com.kotato.multitimelineclient.model.Account
+import com.kotato.multitimelineclient.model.getAccountList
+import com.twitter.sdk.android.core.TwitterCore
+import com.twitter.sdk.android.core.identity.TwitterAuthClient
 
 
 class AccountsMangeActivity : AppCompatActivity() {

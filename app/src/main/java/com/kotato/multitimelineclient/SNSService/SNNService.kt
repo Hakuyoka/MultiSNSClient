@@ -2,8 +2,8 @@ package com.kotato.multitimelineclient.SNSService
 
 import android.graphics.Bitmap
 import android.view.View
-import com.kotato.multitimelineclient.AccountManage.Account
-import com.kotato.multitimelineclient.TimeLine.TimeLineItem
+import com.kotato.multitimelineclient.model.Account
+import com.kotato.multitimelineclient.model.TimeLineItem
 import kotlinx.coroutines.experimental.Deferred
 
 /**

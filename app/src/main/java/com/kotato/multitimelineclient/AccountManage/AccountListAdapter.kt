@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import com.kotato.multitimelineclient.R
+import com.kotato.multitimelineclient.model.Account
 import java.util.*
 
 

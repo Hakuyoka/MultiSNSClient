@@ -7,12 +7,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.AdapterView
 import com.google.gson.Gson
-
 import com.kotato.multitimelineclient.R
 import com.kotato.multitimelineclient.SNSService.TwitterService
 import com.kotato.multitimelineclient.TimeLine.TimeLineActivity
+import com.kotato.multitimelineclient.model.Account
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.identity.TwitterAuthClient
 
@@ -73,7 +73,7 @@ class AccountListFragment(accounts: List<Account>) : ListFragment() {
         adapter.addAll(accunts)
     }
 
-    fun replaceItem(account: Account,index: Int){
+    fun replaceItem(account: Account, index: Int) {
         adapter.remove(index)
         adapter.insert(account,index)
     }
