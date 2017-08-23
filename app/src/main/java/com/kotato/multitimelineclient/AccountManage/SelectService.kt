@@ -3,18 +3,21 @@ package com.kotato.multitimelineclient.AccountManage
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
-import android.support.v7.app.AppCompatActivity
+import android.net.Uri
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.View
 import com.google.gson.Gson
-
 import com.kotato.multitimelineclient.R
+import com.kotato.multitimelineclient.SNSService.MastodonService
 import com.kotato.multitimelineclient.SNSService.TwitterService
 import com.twitter.sdk.android.core.*
 import com.twitter.sdk.android.core.identity.TwitterAuthClient
 import com.twitter.sdk.android.core.identity.TwitterLoginButton
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.launch
 import java.io.File
 
 
@@ -67,5 +70,33 @@ class SelectService : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         super.onActivityResult(requestCode, resultCode, data)
         loginButton.onActivityResult(requestCode, resultCode, data)
+    }
+
+
+    fun authorizeMastodon(view: View) {
+        launch(CommonPool) {
+            MastodonService.authlize().await()?.let {
+                val uri = Uri.parse("https://mstdn.jp/oauth/authorize?client_id=${it.clientId}&response_type=code&redirect_uri=${MastodonService.redirectUrl}&scope=read%20write%20follow")
+                Log.d("Grant URL", uri.toString())
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                startActivity(intent)
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        intent?.data?.getQueryParameter("code")?.let {
+            println(it)
+            launch(CommonPool) {
+                MastodonService.authlize().await()?.let {
+                    val uri = Uri.parse("https://mstdn.jp/oauth/token?grant_type=authorization_code&client_id=${it.clientId}&code=${it}&redirect_uri=urn:ietf:wg:oauth:2.0:oob&client_secret=${it.clientSecret}")
+                    Log.d("Grant URL", uri.toString())
+                    val intent = Intent(Intent.ACTION_VIEW, uri)
+                    startActivity(intent)
+                }
+            }
+
+        }
+        super.onNewIntent(intent)
     }
 }

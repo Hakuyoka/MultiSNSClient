@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".MyApplication"
@@ -16,21 +17,34 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".AccountManage.AccountsMangeActivity"
             android:label="@string/title_activity_accounts_mange"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".AccountManage.SelectService" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:launchMode="singleTask"></activity>
+        <activity
+            android:name=".AccountManage.SelectService"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="multiclient"
+                    android:host="callback"
+                    android:pathPattern=".*" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".TimeLine.TimeLineActivity"
             android:label="@string/title_activity_time_line"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".Input.InputActivity" />
-
 
         <receiver android:name=".Push.NotificationReceiver">
             <intent-filter>
@@ -38,17 +52,13 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".Push.PushService">
-
-        </service>
+        <service android:name=".Push.PushService" />
 
         <activity
             android:name=".Media.MediaTabbedActivity"
             android:label="@string/title_activity_media_tabbed"
-            android:theme="@style/AppTheme.Translucent">
-        </activity>
+            android:theme="@style/AppTheme.Translucent" />
 
     </application>
-
 
 </manifest>

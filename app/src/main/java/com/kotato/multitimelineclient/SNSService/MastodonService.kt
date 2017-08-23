@@ -1,6 +1,5 @@
 package com.kotato.multitimelineclient.SNSService
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
@@ -31,11 +30,13 @@ import java.io.IOException
  */
 
 object MastodonService : SNNService {
+    val redirectUrl = "multiclient://callback"
+
     override fun authlize(view: View, callback: (Any) -> Unit): Deferred<Any?> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    var token: MastodonToken? = null
+    var token: MastodonToken? = MastodonToken.get()
 
     val client = OkHttpClient.Builder().apply {
         if (BuildConfig.DEBUG) {
@@ -159,25 +160,11 @@ object MastodonService : SNNService {
         return@async account
     }
 
-    fun authlize(context: Context, callback: (Any) -> Unit) = async(CommonPool) {
+    fun authlize() = async(CommonPool) {
         if (token == null) {
-            registerClient("MultiTimeLineClient", "urn:ietf:wg:oauth:2.0:oob", "read write follow").await()
+            registerClient("MultiTimeLineClient", redirectUrl, "read write follow").await()
         }
-
-        token?.let {
-            //            val webView = WebView(context)
-//            webView.loadUrl("https://mstdn.jp/oauth/authorize?client_id=9fdf8679dd5df6a5779c8c2c57bca000b9e2c45ed988a0ef934e35d885544c2c&response_type=code&redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=read%20write%20follow")
-//
-//            val call = service.authlize(it.clientId, it.redirectUri, "read write follow")
-//            try {
-//                val result = call.execute()
-//                println(gson.toJson(result))
-//                //エラーだとボディがからになる？
-//            }catch (e: IOException){
-//                e.printStackTrace()
-//            }
-        }
-        return@async
+        return@async token
     }
 
     fun registerClient(appName: String, registerUri: String, scopes: String) = async(CommonPool) {

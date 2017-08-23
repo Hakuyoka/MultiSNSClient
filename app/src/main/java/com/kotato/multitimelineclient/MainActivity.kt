@@ -13,13 +13,11 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.View
-import android.webkit.WebView
 import com.kotato.multitimelineclient.AccountManage.AccountsMangeActivity
 import com.kotato.multitimelineclient.Push.ACTION_LOCAL_PUSH
 import com.kotato.multitimelineclient.Push.NotificationReceiver
 import com.kotato.multitimelineclient.Push.PushService
 import com.kotato.multitimelineclient.Push.REQ_CODE
-import com.kotato.multitimelineclient.SNSService.MastodonService
 import com.kotato.multitimelineclient.SNSService.TwitterService
 import com.kotato.multitimelineclient.TimeLine.TimeLineActivity
 import com.kotato.multitimelineclient.model.getAccountList
@@ -139,11 +137,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun sendRequest(view: View){
-        MastodonService.authlize(this, {})
-        MastodonService.token
-        val webView = findViewById(R.id.web_view) as WebView
-        webView.loadUrl("https://mstdn.jp/oauth/authorize?client_id=9fdf8679dd5df6a5779c8c2c57bca000b9e2c45ed988a0ef934e35d885544c2c&response_type=code&redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=read%20write%20follow")
-
+//        MastodonService.authlize(this, {})
+//        MastodonService.token
+//        val webView = findViewById(R.id.web_view) as WebView
+//        webView.webViewClient = WebViewClient()
+//        webView.loadUrl("https://mstdn.jp/oauth/authorize?client_id=9fdf8679dd5df6a5779c8c2c57bca000b9e2c45ed988a0ef934e35d885544c2c&response_type=code&redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=read%20write%20follow")
+        val uri = Uri.parse("https://mstdn.jp/oauth/authorize?client_id=8ca7a07d6c82932a10571298754ab491a34c98f302960eef13c7f18c33b8998c&response_type=code&redirect_uri=multiclient://callback&scope=read%20write%20follow")
+//        val intent =  Intent(this, WebViewActivity::class.java)
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        startActivityForResult(intent, 200)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -179,7 +181,7 @@ class MainActivity : AppCompatActivity() {
         am.set(0, 0, sender)
 
         launch(CommonPool){
-            OrmaHolder.ORMA.deleteFromTimeLineItem().ownerEq(TwitterCore.getInstance().sessionManager.activeSession.userId).execute()
+            OrmaHolder.ORMA.deleteFromMastodonToken().keyGe(0L).execute()
         }
     }
 

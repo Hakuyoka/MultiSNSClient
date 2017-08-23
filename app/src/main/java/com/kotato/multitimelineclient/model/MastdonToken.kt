@@ -17,6 +17,15 @@ import kotlinx.coroutines.experimental.launch
 data class MastodonToken(@Setter("id") @Column val id: String, @Setter("redirectUri") @Column val redirectUri: String,
                          @Setter("clientId") @Column val clientId: String, @Setter("clientSecret") @Column val clientSecret: String,
                          @Setter("key") @PrimaryKey(autoincrement = true) var key: Long = 0L) {
+
+    companion object {
+        fun get(): MastodonToken? {
+            val result = OrmaHolder.ORMA.selectFromMastodonToken().toList()
+            if (result.isEmpty()) return null
+            return result.first()
+        }
+    }
+
     fun save() {
         val self = this
         launch(CommonPool) {
@@ -24,6 +33,7 @@ data class MastodonToken(@Setter("id") @Column val id: String, @Setter("redirect
             Log.d("save", self.toString())
         }
     }
+
 }
 
 @Table
