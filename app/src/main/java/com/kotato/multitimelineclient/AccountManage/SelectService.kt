@@ -85,14 +85,21 @@ class SelectService : AppCompatActivity() {
     }
 
     override fun onNewIntent(intent: Intent?) {
-        intent?.data?.getQueryParameter("code")?.let {
-            println(it)
+        intent?.data?.getQueryParameter("code")?.let { code ->
+            println(code)
             launch(CommonPool) {
                 MastodonService.authlize().await()?.let {
-                    val uri = Uri.parse("https://mstdn.jp/oauth/token?grant_type=authorization_code&client_id=${it.clientId}&code=${it}&redirect_uri=urn:ietf:wg:oauth:2.0:oob&client_secret=${it.clientSecret}")
-                    Log.d("Grant URL", uri.toString())
-                    val intent = Intent(Intent.ACTION_VIEW, uri)
-                    startActivity(intent)
+                    MastodonService.registerToken(it.clientId, it.clientSecret, it.redirectUri, code).await()
+                    val account = MastodonService.getUserInfo { }.await()
+                    val bitmap = MastodonService.getImage("https:/" + account!!.imageUrl) {}.await()
+                    val filePath = filesDir.path + "/" + account.id + "_1" + ".png"
+                    val outStream = File(filePath).absoluteFile.outputStream()
+                    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, outStream)
+
+                    val intent = Intent(this@SelectService, AccountsMangeActivity::class.java)
+                    intent.putExtra("Account", account)
+                    setResult(Activity.RESULT_OK, intent)
+                    finish()
                 }
             }
 

@@ -57,7 +57,7 @@ fun List<TimeLineItem>.save() {
 data class TimeLineItem(
         @Setter("id") @Column val id: Long,
         @Setter("userId") @Column(indexed = true) val userId: Long,
-        @Setter("userName") @Column val userName: String,
+        @Setter("username") @Column val userName: String,
         @Setter("text") @Column val text: String,
         @Setter("userIcon") @Column val userIcon: String,
         @Setter("mediaUrls") @Column val mediaUrls: List<String>? = null,

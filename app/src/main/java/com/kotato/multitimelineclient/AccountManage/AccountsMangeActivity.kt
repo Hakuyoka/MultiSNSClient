@@ -59,7 +59,6 @@ class AccountsMangeActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
-        Log.d("finish account", " a a a a ")
         if (resultCode != Activity.RESULT_OK || intent == null) {
             return
         }

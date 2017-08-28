@@ -13,11 +13,14 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.View
+import com.google.gson.FieldNamingPolicy
+import com.google.gson.GsonBuilder
 import com.kotato.multitimelineclient.AccountManage.AccountsMangeActivity
 import com.kotato.multitimelineclient.Push.ACTION_LOCAL_PUSH
 import com.kotato.multitimelineclient.Push.NotificationReceiver
 import com.kotato.multitimelineclient.Push.PushService
 import com.kotato.multitimelineclient.Push.REQ_CODE
+import com.kotato.multitimelineclient.SNSService.MastodonService
 import com.kotato.multitimelineclient.SNSService.TwitterService
 import com.kotato.multitimelineclient.TimeLine.TimeLineActivity
 import com.kotato.multitimelineclient.model.getAccountList
@@ -27,6 +30,10 @@ import com.twitter.sdk.android.core.TwitterConfig
 import com.twitter.sdk.android.core.TwitterCore
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.launch
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 class MainActivity : AppCompatActivity() {
@@ -142,10 +149,30 @@ class MainActivity : AppCompatActivity() {
 //        val webView = findViewById(R.id.web_view) as WebView
 //        webView.webViewClient = WebViewClient()
 //        webView.loadUrl("https://mstdn.jp/oauth/authorize?client_id=9fdf8679dd5df6a5779c8c2c57bca000b9e2c45ed988a0ef934e35d885544c2c&response_type=code&redirect_uri=urn:ietf:wg:oauth:2.0:oob&scope=read%20write%20follow")
-        val uri = Uri.parse("https://mstdn.jp/oauth/authorize?client_id=8ca7a07d6c82932a10571298754ab491a34c98f302960eef13c7f18c33b8998c&response_type=code&redirect_uri=multiclient://callback&scope=read%20write%20follow")
-//        val intent =  Intent(this, WebViewActivity::class.java)
-        val intent = Intent(Intent.ACTION_VIEW, uri)
-        startActivityForResult(intent, 200)
+//        val uri = Uri.parse("https://mstdn.jp/oauth/authorize?client_id=8ca7a07d6c82932a10571298754ab491a34c98f302960eef13c7f18c33b8998c&response_type=code&redirect_uri=multiclient://callback&scope=read%20write%20follow")
+////        val intent =  Intent(this, WebViewActivity::class.java)
+//        val intent = Intent(Intent.ACTION_VIEW, uri)
+//        startActivityForResult(intent, 200)
+
+
+        val client = OkHttpClient.Builder().apply {
+            if (BuildConfig.DEBUG) {
+                val logging = HttpLoggingInterceptor()
+                logging.level = HttpLoggingInterceptor.Level.BODY
+                addInterceptor(logging)
+            }
+        }
+
+        val gson = GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create() // NamingPoricy そ指定する
+
+        val service = Retrofit.Builder()
+                .baseUrl("https://mstdn.jp")
+                .client(client.build())
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build().create(MastodonService.MastodonHttpService::class.java)
+
+        val credit = service.verifyCredentials("4d6aa2db28f8ba9ca7894ee974764f97b2e6b8460a62eec18c4619cffdd00937")
+        println(gson.toJson(credit))
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

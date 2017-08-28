@@ -199,7 +199,7 @@ object TwitterService : SNNService {
                 override fun success(result: Result<User>) {
                     Log.i("Users", result.data.profileImageUrl)
                     val user = result.data
-                    account = Account(user.id.toString(), user.name, user.email, 0, null, null, true, user.profileImageUrlHttps, gson.toJson(activeSession))
+                    account = Account(user.id.toString(), user.name, user.email, SNSType.TWITTER, null, null, true, user.profileImageUrlHttps, gson.toJson(activeSession))
                     callback(account)
                     latch.countDown()
                 }

@@ -37,7 +37,7 @@ data class MastodonToken(@Setter("id") @Column val id: String, @Setter("redirect
 }
 
 @Table
-data class MastodonUserToken(
+data class OAuth2Token(
         @Setter("accessToken") @Column val accessToken: String,
         @Setter("tokenType") @Column val tokenType: String,
         @Setter("scope") @Column val scope: String,
@@ -46,8 +46,23 @@ data class MastodonUserToken(
     fun save() {
         val self = this
         launch(CommonPool) {
-            OrmaHolder.ORMA.insertIntoMastodonUserToken(self)
+            OrmaHolder.ORMA.insertIntoOAuth2Token(self)
             Log.d("save", self.toString())
         }
     }
+
+    val autholizeHeader: String
+        get() {
+            return "Bearer " + this.accessToken
+        }
+
+}
+
+@Table
+data class MastodonVerifyCredential(
+        @Setter("id") @Column val id: Long,
+        @Setter("username") @Column val username: String,
+        @Setter("avatar") @Column val avatar: String,
+        @Setter("avatar_static") @Column val avatarStatic: String) {
+
 }

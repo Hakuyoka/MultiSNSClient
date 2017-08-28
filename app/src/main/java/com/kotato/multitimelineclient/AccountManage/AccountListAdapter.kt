@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import com.kotato.multitimelineclient.R
+import com.kotato.multitimelineclient.SNSService.SNSType
 import com.kotato.multitimelineclient.model.Account
 import java.util.*
 
@@ -66,7 +67,7 @@ class AccountListAdapter(context: Context) : ArrayAdapter<Account>(context, 0) {
         super.addAll(parcelableArrayList)
     }
 
-    fun add(id: String, name: String, type: Int = 0) {
+    fun add(id: String, name: String, type: SNSType = SNSType.TWITTER) {
         val item = Account(id, name, type = type)
         super.add(item)
     }

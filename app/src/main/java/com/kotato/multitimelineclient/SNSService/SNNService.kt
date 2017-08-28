@@ -19,3 +19,18 @@ interface SNNService{
     fun authlize(view: View, callback: (Any) -> Unit): Deferred<Any?>
 }
 
+
+enum class SNSType(val id: Id) : Int {
+    TWITTER(0),
+    MASTODON(1);
+
+    companion object {
+        fun create(id: Int): SNSType? {
+            return when (id) {
+                SNSType.TWITTER.id -> SNSType.TWITTER
+                SNSType.MASTODON.id -> SNSType.MASTODON
+                else -> null
+            }
+        }
+    }
+}

@@ -19,9 +19,7 @@ import org.json.JSONException
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
-import retrofit2.http.POST
+import retrofit2.http.*
 import java.io.IOException
 
 
@@ -37,6 +35,7 @@ object MastodonService : SNNService {
     }
 
     var token: MastodonToken? = MastodonToken.get()
+    var userToken: OAuth2Token? = null
 
     val client = OkHttpClient.Builder().apply {
         if (BuildConfig.DEBUG) {
@@ -156,8 +155,17 @@ object MastodonService : SNNService {
      * 認証されているユーザ情報を取得する
      */
     override fun getUserInfo(callback: (Account?) -> Unit) = async(CommonPool) {
-        var account: Account? = null
-        return@async account
+        userToken?.apply {
+            service.verifyCredentials(this.autholizeHeader).execute().let {
+                it.errorBody()?.let {
+                    return@async null
+                }
+                it.body()?.let { response ->
+                    return@async Account(response.id.toString(), response.username, type = SNSType.TWITTER, imageUrl = response.avatar)
+                }
+            }
+        }
+        return@async null
     }
 
     fun authlize() = async(CommonPool) {
@@ -179,14 +187,24 @@ object MastodonService : SNNService {
         }
     }
 
+    fun registerToken(clientId: String, clientSecret: String, redirectUri: String, code: String) = async(CommonPool) {
+        val token = service.token(clientId, clientSecret, redirectUri, code).execute()?.body()
+        token?.save()
+        userToken = token
+        return@async token
+    }
+
     interface MastodonHttpService {
         @FormUrlEncoded
         @POST("api/v1/apps")
         fun registerClient(@Field("client_name") clientName: String, @Field("redirect_uris") redirectUri: String, @Field("scopes") scope: String): Call<MastodonToken>
 
         @FormUrlEncoded
-        @POST("oauth/authorize")
-        fun authlize(@Field("client_id") clientId: String, @Field("redirect_uris") redirectUri: String, @Field("scopes") scope: String, @Field("response_type") responseType: String = "code"): Call<MastodonUserToken>
+        @POST("oauth/token")
+        fun token(@Field("client_id") clientId: String, @Field("client_secret") clientSecret: String, @Field("redirect_uri") redirectUri: String, @Field("code") code: String, @Field("grant_type") responseType: String = "authorization_code"): Call<OAuth2Token>
+
+        @GET("api/v1/accounts/verify_credentials")
+        fun verifyCredentials(@Header("Authorization") token: String): Call<MastodonVerifyCredential>
 
 
     }
